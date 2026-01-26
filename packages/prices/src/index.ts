@@ -1,5 +1,5 @@
 /**
- * Sperax MCP Prices
+ * boosty MCP Prices
  * 
  * Real-time DeFi price data server using Model Context Protocol.
  * 

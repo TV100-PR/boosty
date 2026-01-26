@@ -35,9 +35,9 @@ if (args.includes('--no-yields')) options.enableYields = false;
 // Show help
 if (args.includes('--help') || args.includes('-h')) {
   console.log(`
-Sperax MCP DeFi Server
+boosty MCP DeFi Server
 
-Usage: sperax-mcp [options]
+Usage: boosty-mcp [options]
 
 Options:
   --prices-only    Only enable price tools
@@ -56,9 +56,9 @@ Environment Variables:
   BASESCAN_API_KEY    API key for Basescan
 
 Examples:
-  sperax-mcp                    # Run with all tools
-  sperax-mcp --prices-only      # Run only price tools
-  sperax-mcp --no-yields        # Run without yield tools
+  boosty-mcp                    # Run with all tools
+  boosty-mcp --prices-only      # Run only price tools
+  boosty-mcp --no-yields        # Run without yield tools
 `);
   process.exit(0);
 }
@@ -69,7 +69,7 @@ if (options.enablePrices) enabled.push('prices');
 if (options.enableWallets) enabled.push('wallets');
 if (options.enableYields) enabled.push('yields');
 
-console.error(`Starting Sperax MCP DeFi server with: ${enabled.join(', ')}`);
+console.error(`Starting boosty MCP DeFi server with: ${enabled.join(', ')}`);
 
 runServer(options).catch((error) => {
   console.error('Failed to start server:', error);

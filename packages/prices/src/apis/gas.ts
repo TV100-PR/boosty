@@ -19,7 +19,7 @@ import {
   HttpClient,
   ChainNotSupportedError,
   APIError,
-} from '@sperax/mcp-shared';
+} from '@boosty/mcp-shared';
 
 // ============================================================================
 // Types & Interfaces

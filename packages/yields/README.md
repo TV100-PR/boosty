@@ -5,7 +5,7 @@ MCP server for DeFi yield discovery and comparison, powered by DeFiLlama.
 ## Installation
 
 ```bash
-npm install @sperax/mcp-yields
+npm install @boosty/mcp-yields
 ```
 
 ## Usage
@@ -13,13 +13,13 @@ npm install @sperax/mcp-yields
 ### As CLI
 
 ```bash
-npx sperax-mcp-yields
+npx boosty-mcp-yields
 ```
 
 ### As Library
 
 ```typescript
-import { createYieldsServer } from '@sperax/mcp-yields';
+import { createYieldsServer } from '@boosty/mcp-yields';
 
 const server = createYieldsServer();
 await server.run();

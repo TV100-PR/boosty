@@ -220,7 +220,7 @@ export class DefiLlamaClient {
             signal: controller.signal,
             headers: {
               'Accept': 'application/json',
-              'User-Agent': 'sperax-mcp-yields/0.1.0',
+              'User-Agent': 'boosty-mcp-yields/0.1.0',
             },
           });
           

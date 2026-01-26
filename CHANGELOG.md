@@ -9,14 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-#### @sperax/mcp-shared (v0.1.0)
+#### @boosty/mcp-shared (v0.1.0)
 - Cache utility with TTL support and automatic cleanup
 - RateLimiter for API request management
 - HttpClient with retry logic and rate limiting
 - Chain configuration for Ethereum, Arbitrum, Base, Polygon
 - Common type definitions for DeFi data
 
-#### @sperax/mcp-prices (v0.1.0)
+#### @boosty/mcp-prices (v0.1.0)
 - `getTokenPrice` - Get current price and market data for tokens
 - `getGasPrices` - Get gas prices across multiple chains
 - `getTopMovers` - Get top gaining/losing tokens
@@ -24,14 +24,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `comparePrices` - Compare multiple token prices
 - `getTokenPriceHistory` - Get historical price data
 
-#### @sperax/mcp-wallets (v0.1.0)
+#### @boosty/mcp-wallets (v0.1.0)
 - `getWalletPortfolio` - Complete portfolio overview
 - `getTokenBalances` - Detailed ERC20 balances
 - `getNFTs` - NFT holdings with metadata
 - `getDeFiPositions` - DeFi protocol positions
 - `getApprovals` - Token approval analysis
 
-#### @sperax/mcp-yields (v0.1.0)
+#### @boosty/mcp-yields (v0.1.0)
 - `getTopYields` - Top yield opportunities
 - `getPoolDetails` - Detailed pool information
 - `compareYields` - Compare multiple pools
@@ -41,7 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `getLPYields` - Liquidity provider yields
 - `estimateReturns` - Return projections
 
-#### @sperax/mcp-defi (v0.1.0)
+#### @boosty/mcp-defi (v0.1.0)
 - Combined server with all tools
 - CLI with selective tool enabling
 - MCP manifest for tool discovery

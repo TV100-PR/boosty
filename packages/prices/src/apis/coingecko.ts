@@ -18,7 +18,7 @@ import {
   HttpClient, 
   TokenNotFoundError, 
   APIError 
-} from '@sperax/mcp-shared';
+} from '@boosty/mcp-shared';
 
 const COINGECKO_BASE_URL = 'https://api.coingecko.com/api/v3';
 const COINGECKO_PRO_URL = 'https://pro-api.coingecko.com/api/v3';
@@ -84,7 +84,7 @@ const SYMBOL_TO_ID: Record<string, string> = {
   dai: 'dai',
   frax: 'frax',
   lusd: 'liquity-usd',
-  usds: 'sperax-usd',
+  usds: 'boosty-usd',
   tusd: 'true-usd',
   usdp: 'paxos-standard',
   gusd: 'gemini-dollar',
@@ -136,7 +136,7 @@ const SYMBOL_TO_ID: Record<string, string> = {
   bch: 'bitcoin-cash',
   icp: 'internet-computer',
   blur: 'blur',
-  spa: 'sperax',
+  spa: 'boosty',
 };
 
 // ============================================================================

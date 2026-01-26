@@ -24,7 +24,7 @@ import {
   comparePricesDefinition,
   getTokenPriceHistory,
   getTokenPriceHistoryDefinition,
-} from '@sperax/mcp-prices';
+} from '@boosty/mcp-prices';
 
 // Import wallet tools
 import {
@@ -38,7 +38,7 @@ import {
   getDeFiPositionsDefinition,
   getApprovals,
   getApprovalsDefinition,
-} from '@sperax/mcp-wallets';
+} from '@boosty/mcp-wallets';
 
 // Import yield tools
 import {
@@ -58,7 +58,7 @@ import {
   getLPYieldsDefinition,
   estimateReturns,
   estimateReturnsDefinition,
-} from '@sperax/mcp-yields';
+} from '@boosty/mcp-yields';
 
 export interface CombinedServerOptions {
   enablePrices?: boolean;
@@ -117,7 +117,7 @@ export function createCombinedServer(options: CombinedServerOptions = {}): Serve
 
   const server = new Server(
     {
-      name: 'sperax-mcp-defi',
+      name: 'boosty-mcp-defi',
       version: '0.1.0',
     },
     {
@@ -172,5 +172,5 @@ export async function runServer(options: CombinedServerOptions = {}): Promise<vo
   const server = createCombinedServer(options);
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error('Sperax MCP DeFi server running on stdio');
+  console.error('boosty MCP DeFi server running on stdio');
 }

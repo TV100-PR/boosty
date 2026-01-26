@@ -1,4 +1,4 @@
-# @sperax/mcp-wallets
+# @boosty/mcp-wallets
 
 MCP server for wallet analytics, portfolio tracking, and balance data.
 
@@ -38,7 +38,7 @@ Optional environment variables:
 pnpm start
 
 # Or run directly
-npx sperax-mcp-wallets
+npx boosty-mcp-wallets
 ```
 
 ### MCP Client Configuration
@@ -50,7 +50,7 @@ Add to your MCP client configuration:
   "mcpServers": {
     "wallets": {
       "command": "npx",
-      "args": ["sperax-mcp-wallets"],
+      "args": ["boosty-mcp-wallets"],
       "env": {
         "ALCHEMY_API_KEY": "your-api-key"
       }
@@ -66,7 +66,7 @@ import {
   getWalletPortfolio,
   getTokenBalances,
   resolveENS 
-} from '@sperax/mcp-wallets';
+} from '@boosty/mcp-wallets';
 
 // Get portfolio
 const portfolio = await getWalletPortfolio({

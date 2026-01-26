@@ -4,7 +4,7 @@
 ```
 Build the combined MCP server entry point, integration tests, and documentation.
 
-Repository: nirholas/sperax-mcp-servers
+Repository: nirholas/boosty-mcp-servers
 Branch: main
 
 Assumes all packages exist: /packages/shared, /packages/prices, /packages/wallets, /packages/yields
@@ -13,16 +13,16 @@ Create:
 
 1. /packages/combined/package.json
 {
-  "name": "@sperax/mcp-defi",
+  "name": "@boosty/mcp-defi",
   "version": "0.1.0",
   "description": "All-in-one DeFi MCP server",
   "main": "./dist/index.js",
-  "bin": { "sperax-mcp": "./dist/cli.js" },
+  "bin": { "boosty-mcp": "./dist/cli.js" },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "@sperax/mcp-prices": "workspace:*",
-    "@sperax/mcp-wallets": "workspace:*",
-    "@sperax/mcp-yields": "workspace:*"
+    "@boosty/mcp-prices": "workspace:*",
+    "@boosty/mcp-wallets": "workspace:*",
+    "@boosty/mcp-yields": "workspace:*"
   }
 }
 
@@ -32,10 +32,10 @@ Create:
 
 3. /packages/combined/src/server.ts
 - Create MCP server that registers ALL tools from all packages
-- Single entry point for SperaxOS
+- Single entry point for boostyOS
 
 4. /packages/combined/src/cli.ts
-- CLI: sperax-mcp [--prices-only] [--wallets-only] [--yields-only]
+- CLI: boosty-mcp [--prices-only] [--wallets-only] [--yields-only]
 - Can run combined or individual servers
 
 5. /packages/combined/mcp-manifest.json
@@ -46,7 +46,7 @@ Create:
 - Installation: pnpm install
 - Quick start for each package
 - Environment variables needed (API keys)
-- MCP integration guide for SperaxOS
+- MCP integration guide for boostyOS
 - Tool reference table (all tools, inputs, outputs)
 - Examples of each tool
 
@@ -58,7 +58,7 @@ ARBISCAN_API_KEY=
 BASESCAN_API_KEY=
 
 8. /docs/INTEGRATION.md
-- How to add to SperaxOS
+- How to add to boostyOS
 - MCP manifest format
 - Configuration options
 
@@ -108,4 +108,4 @@ Ensure:
 | 4 | `yields` | getTopYields, getPoolDetails, compareYields, getStablecoinYields, getRiskAssessment |
 | 5 | `combined` | All tools + docs + CI |
 
-Create the repo `nirholas/sperax-mcp-servers` and launch all 5!
+Create the repo `nirholas/boosty-mcp-servers` and launch all 5!

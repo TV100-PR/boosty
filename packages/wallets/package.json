@@ -1,11 +1,11 @@
 {
-  "name": "@sperax/mcp-wallets",
+  "name": "@boosty/mcp-wallets",
   "version": "0.1.0",
   "description": "Wallet analytics MCP server",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "sperax-mcp-wallets": "./dist/cli.js"
+    "boosty-mcp-wallets": "./dist/cli.js"
   },
   "scripts": {
     "build": "tsc",
@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "@sperax/mcp-shared": "workspace:*",
+    "@boosty/mcp-shared": "workspace:*",
     "zod": "^3.22.0"
   },
   "devDependencies": {

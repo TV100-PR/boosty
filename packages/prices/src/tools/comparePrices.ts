@@ -6,7 +6,7 @@
  */
 
 import { coingeckoClient, type TokenPrice } from '../apis/coingecko.js';
-import { ValidationError } from '@sperax/mcp-shared';
+import { ValidationError } from '@boosty/mcp-shared';
 
 // ============================================================================
 // Input/Output Types

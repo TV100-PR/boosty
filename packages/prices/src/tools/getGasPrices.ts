@@ -6,7 +6,7 @@
  */
 
 import { gasFetcher, type GasPrice } from '../apis/gas.js';
-import { ValidationError } from '@sperax/mcp-shared';
+import { ValidationError } from '@boosty/mcp-shared';
 
 // ============================================================================
 // Input/Output Types

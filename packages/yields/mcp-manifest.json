@@ -1,9 +1,9 @@
 {
-  "name": "sperax-mcp-yields",
+  "name": "boosty-mcp-yields",
   "version": "0.1.0",
   "description": "MCP server for DeFi yield discovery and comparison powered by DeFiLlama",
   "repository": "https://github.com/nirholas/defi-mcp-servers",
-  "author": "Sperax",
+  "author": "boosty",
   "license": "MIT",
   "tools": [
     {

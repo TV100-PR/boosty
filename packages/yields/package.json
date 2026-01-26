@@ -1,11 +1,11 @@
 {
-  "name": "@sperax/mcp-yields",
+  "name": "@boosty/mcp-yields",
   "version": "0.1.0",
   "description": "MCP server for DeFi yield discovery and comparison",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "sperax-mcp-yields": "./dist/cli.js"
+    "boosty-mcp-yields": "./dist/cli.js"
   },
   "scripts": {
     "build": "tsc",

@@ -1,5 +1,5 @@
 {
-  "name": "@sperax/mcp-wallets",
+  "name": "@boosty/mcp-wallets",
   "version": "0.1.0",
   "description": "MCP server for wallet analytics, portfolio tracking, and balance data",
   "tools": [

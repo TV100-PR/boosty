@@ -1,5 +1,5 @@
 /**
- * @sperax/mcp-yields
+ * @boosty/mcp-yields
  * MCP server for DeFi yield discovery and comparison
  */
 

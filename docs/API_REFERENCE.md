@@ -1,6 +1,6 @@
 # API Reference
 
-Complete documentation for all Sperax MCP DeFi tools.
+Complete documentation for all boosty MCP DeFi tools.
 
 ## Table of Contents
 

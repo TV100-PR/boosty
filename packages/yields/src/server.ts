@@ -187,7 +187,7 @@ export class YieldsServer {
   constructor() {
     this.server = new Server(
       {
-        name: 'sperax-mcp-yields',
+        name: 'boosty-mcp-yields',
         version: '0.1.0',
       },
       {
@@ -268,7 +268,7 @@ export class YieldsServer {
   async run(): Promise<void> {
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
-    console.error('Sperax MCP Yields server running on stdio');
+    console.error('boosty MCP Yields server running on stdio');
   }
 }
 

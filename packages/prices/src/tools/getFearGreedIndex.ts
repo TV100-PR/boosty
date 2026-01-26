@@ -8,7 +8,7 @@
  * @see https://alternative.me/crypto/fear-and-greed-index/
  */
 
-import { SimpleCache, HttpClient, APIError } from '@sperax/mcp-shared';
+import { SimpleCache, HttpClient, APIError } from '@boosty/mcp-shared';
 
 // ============================================================================
 // Constants

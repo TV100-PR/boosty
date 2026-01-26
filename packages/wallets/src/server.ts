@@ -92,7 +92,7 @@ export class WalletsServer {
   constructor() {
     this.server = new Server(
       {
-        name: '@sperax/mcp-wallets',
+        name: '@boosty/mcp-wallets',
         version: '0.1.0',
       },
       {

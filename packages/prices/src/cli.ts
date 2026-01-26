@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Sperax MCP Prices Server CLI
+ * boosty MCP Prices Server CLI
  * 
  * Command-line interface for running the prices MCP server.
  * Designed for use with Claude Desktop and other MCP clients.
@@ -14,7 +14,7 @@ import { PricesServer } from './server.js';
 // ============================================================================
 
 const VERSION = '0.1.0';
-const NAME = 'sperax-mcp-prices';
+const NAME = 'boosty-mcp-prices';
 
 const HELP_TEXT = `
 ${NAME} v${VERSION}

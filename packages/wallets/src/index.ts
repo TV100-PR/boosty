@@ -1,5 +1,5 @@
 /**
- * @sperax/mcp-wallets
+ * @boosty/mcp-wallets
  * Wallet analytics MCP server
  */
 

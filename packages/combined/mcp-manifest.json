@@ -1,7 +1,7 @@
 {
-  "name": "sperax-mcp-defi",
+  "name": "boosty-mcp-defi",
   "version": "0.1.0",
-  "description": "All-in-one DeFi MCP server for SperaxOS",
+  "description": "All-in-one DeFi MCP server for boostyOS",
   "tools": [
     {
       "name": "getTokenPrice",

@@ -1,5 +1,5 @@
 /**
- * Sperax MCP Prices Server
+ * boosty MCP Prices Server
  * 
  * Production-ready MCP server for real-time DeFi price data.
  * Provides tools for token prices, gas prices, market movers, and sentiment.
@@ -71,7 +71,7 @@ export class PricesServer {
   private isRunning: boolean = false;
 
   constructor(options: PricesServerOptions = {}) {
-    const { name = 'sperax-mcp-prices', version = '0.1.0' } = options;
+    const { name = 'boosty-mcp-prices', version = '0.1.0' } = options;
 
     this.server = new Server(
       { name, version },
@@ -176,7 +176,7 @@ export class PricesServer {
     await this.server.connect(transport);
     this.isRunning = true;
 
-    console.error('🚀 Sperax MCP Prices Server started');
+    console.error('🚀 boosty MCP Prices Server started');
     console.error(`📊 Available tools: ${TOOL_DEFINITIONS.map((t) => t.name).join(', ')}`);
   }
 

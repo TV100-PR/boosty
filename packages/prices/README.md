@@ -1,11 +1,11 @@
-# Sperax MCP Prices Server
+# boosty MCP Prices Server
 
 Real-time DeFi price data server using Model Context Protocol.
 
 ## Installation
 
 ```bash
-npm install @sperax/mcp-prices
+npm install @boosty/mcp-prices
 ```
 
 ## Usage
@@ -14,11 +14,11 @@ npm install @sperax/mcp-prices
 
 ```bash
 # Run directly
-npx sperax-mcp-prices
+npx boosty-mcp-prices
 
 # Or install globally
-npm install -g @sperax/mcp-prices
-sperax-mcp-prices
+npm install -g @boosty/mcp-prices
+boosty-mcp-prices
 ```
 
 ### With Claude Desktop
@@ -30,7 +30,7 @@ Add to your `claude_desktop_config.json`:
   "mcpServers": {
     "prices": {
       "command": "npx",
-      "args": ["sperax-mcp-prices"]
+      "args": ["boosty-mcp-prices"]
     }
   }
 }
@@ -39,7 +39,7 @@ Add to your `claude_desktop_config.json`:
 ### Programmatic Usage
 
 ```typescript
-import { pricesServer, getTokenPrice, comparePrices } from '@sperax/mcp-prices';
+import { pricesServer, getTokenPrice, comparePrices } from '@boosty/mcp-prices';
 
 // Get single token price
 const btcPrice = await getTokenPrice({ symbol: 'BTC' });

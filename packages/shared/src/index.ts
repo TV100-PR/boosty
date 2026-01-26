@@ -88,3 +88,6 @@ export {
   formatRelativeTime,
   formatTokenAmount,
 } from './formatters.js';
+
+// Shared interfaces for multi-package integration
+export * from './interfaces/index.js';

@@ -1,5 +1,5 @@
 {
-  "name": "@sperax/mcp-defi",
+  "name": "@boosty/mcp-defi",
   "version": "0.1.0",
   "description": "All-in-one DeFi MCP server combining prices, wallets, and yields",
   "main": "./dist/index.js",
@@ -13,7 +13,7 @@
     }
   },
   "bin": {
-    "sperax-mcp": "./dist/cli.js"
+    "boosty-mcp": "./dist/cli.js"
   },
   "files": ["dist"],
   "scripts": {
@@ -27,10 +27,10 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "@sperax/mcp-shared": "workspace:*",
-    "@sperax/mcp-prices": "workspace:*",
-    "@sperax/mcp-wallets": "workspace:*",
-    "@sperax/mcp-yields": "workspace:*",
+    "@boosty/mcp-shared": "workspace:*",
+    "@boosty/mcp-prices": "workspace:*",
+    "@boosty/mcp-wallets": "workspace:*",
+    "@boosty/mcp-yields": "workspace:*",
     "zod": "^3.22.0"
   },
   "devDependencies": {
@@ -49,7 +49,7 @@
     "prices",
     "wallets",
     "yields",
-    "sperax"
+    "boosty"
   ],
   "license": "MIT"
 }

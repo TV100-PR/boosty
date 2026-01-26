@@ -1,34 +1,34 @@
 # Integration Guide
 
-This guide explains how to integrate the Sperax MCP DeFi servers with various platforms.
+This guide explains how to integrate the boosty MCP DeFi servers with various platforms.
 
 ## Table of Contents
 
-- [SperaxOS Integration](#speraxos-integration)
+- [boostyOS Integration](#boostyos-integration)
 - [Claude Desktop Integration](#claude-desktop-integration)
 - [Custom Integration](#custom-integration)
 - [MCP Manifest Format](#mcp-manifest-format)
 - [Configuration Options](#configuration-options)
 
-## SperaxOS Integration
+## boostyOS Integration
 
 ### Basic Setup
 
 1. Install the package globally or in your project:
 
 ```bash
-npm install -g @sperax/mcp-defi
+npm install -g @boosty/mcp-defi
 # or
-pnpm add @sperax/mcp-defi
+pnpm add @boosty/mcp-defi
 ```
 
-2. Add to your SperaxOS MCP configuration:
+2. Add to your boostyOS MCP configuration:
 
 ```json
 {
   "mcpServers": {
-    "sperax-defi": {
-      "command": "sperax-mcp",
+    "boosty-defi": {
+      "command": "boosty-mcp",
       "env": {
         "ALCHEMY_API_KEY": "${ALCHEMY_API_KEY}",
         "COINGECKO_API_KEY": "${COINGECKO_API_KEY}"
@@ -45,15 +45,15 @@ You can run only specific tool categories to reduce complexity:
 ```json
 {
   "mcpServers": {
-    "sperax-prices": {
-      "command": "sperax-mcp",
+    "boosty-prices": {
+      "command": "boosty-mcp",
       "args": ["--prices-only"],
       "env": {
         "COINGECKO_API_KEY": "${COINGECKO_API_KEY}"
       }
     },
-    "sperax-wallets": {
-      "command": "sperax-mcp",
+    "boosty-wallets": {
+      "command": "boosty-mcp",
       "args": ["--wallets-only"],
       "env": {
         "ALCHEMY_API_KEY": "${ALCHEMY_API_KEY}"
@@ -75,9 +75,9 @@ You can run only specific tool categories to reduce complexity:
 ```json
 {
   "mcpServers": {
-    "sperax-defi": {
+    "boosty-defi": {
       "command": "node",
-      "args": ["/path/to/node_modules/@sperax/mcp-defi/dist/cli.js"],
+      "args": ["/path/to/node_modules/@boosty/mcp-defi/dist/cli.js"],
       "env": {
         "ALCHEMY_API_KEY": "your-alchemy-api-key"
       }
@@ -98,7 +98,7 @@ You can run only specific tool categories to reduce complexity:
 ### Using the Server Programmatically
 
 ```typescript
-import { createCombinedServer } from '@sperax/mcp-defi';
+import { createCombinedServer } from '@boosty/mcp-defi';
 
 // Create server with all tools
 const server = createCombinedServer();
@@ -120,7 +120,7 @@ import {
   getTokenPrice,
   getWalletPortfolio,
   getTopYields,
-} from '@sperax/mcp-defi';
+} from '@boosty/mcp-defi';
 
 // Get token price
 const price = await getTokenPrice({ symbol: 'ETH', currency: 'usd' });
@@ -145,7 +145,7 @@ The MCP manifest file (`mcp-manifest.json`) describes all available tools:
 
 ```json
 {
-  "name": "sperax-mcp-defi",
+  "name": "boosty-mcp-defi",
   "version": "0.1.0",
   "description": "All-in-one DeFi MCP server",
   "tools": [
@@ -215,7 +215,7 @@ interface CombinedServerOptions {
 Enable debug logging:
 
 ```bash
-DEBUG=sperax:* sperax-mcp
+DEBUG=boosty:* boosty-mcp
 ```
 
 ### Getting Help

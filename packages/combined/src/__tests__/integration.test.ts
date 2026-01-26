@@ -6,7 +6,7 @@ import { describe, it, expect, beforeAll, vi } from 'vitest';
 import { createCombinedServer } from '../server';
 
 // Mock the external API clients
-vi.mock('@sperax/mcp-prices', () => ({
+vi.mock('@boosty/mcp-prices', () => ({
   getTokenPrice: vi.fn().mockResolvedValue({
     symbol: 'ETH',
     price: 2500,
@@ -59,7 +59,7 @@ vi.mock('@sperax/mcp-prices', () => ({
   },
 }));
 
-vi.mock('@sperax/mcp-wallets', () => ({
+vi.mock('@boosty/mcp-wallets', () => ({
   getWalletPortfolio: vi.fn().mockResolvedValue({
     address: '0x123',
     totalValueUsd: 10000,
@@ -96,7 +96,7 @@ vi.mock('@sperax/mcp-wallets', () => ({
   },
 }));
 
-vi.mock('@sperax/mcp-yields', () => ({
+vi.mock('@boosty/mcp-yields', () => ({
   getTopYields: vi.fn().mockResolvedValue({ opportunities: [] }),
   getTopYieldsDefinition: {
     name: 'getTopYields',
