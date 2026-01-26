@@ -127,6 +127,12 @@ export interface QuoteParams {
   swapMode?: 'ExactIn' | 'ExactOut';
   /** Platform fee in basis points */
   platformFeeBps?: number;
+  /** Restrict intermediate tokens for better routes (default: true) */
+  restrictIntermediateTokens?: boolean;
+  /** Use shared accounts (default: true) */
+  useSharedAccounts?: boolean;
+  /** As legacy transaction (default: false) */
+  asLegacyTransaction?: boolean;
 }
 
 /**

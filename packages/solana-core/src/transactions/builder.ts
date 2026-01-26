@@ -257,6 +257,79 @@ export class TransactionBuilder implements ITransactionBuilder {
     this.lastValidBlockHeight = undefined;
     return this;
   }
+
+  /**
+   * Clone builder with same configuration
+   */
+  clone(): TransactionBuilder {
+    const builder = new TransactionBuilder(this.connection, {
+      payer: this.feePayer,
+      computeUnitLimit: this.computeUnits,
+      computeUnitPrice: this.priorityFee,
+      addressLookupTables: [...this.lookupTables],
+      recentBlockhash: this.recentBlockhash,
+    });
+    builder.addInstructions([...this.instructions]);
+    return builder;
+  }
+
+  /**
+   * Auto-optimize transaction by simulating and adjusting compute units
+   */
+  async optimize(): Promise<TransactionBuilder> {
+    const simulation = await this.simulate();
+    
+    if (simulation.success && simulation.unitsConsumed) {
+      // Add 20% buffer to actual consumption
+      const optimizedUnits = Math.ceil(simulation.unitsConsumed * 1.2);
+      this.setComputeUnits(Math.min(optimizedUnits, 1_400_000));
+    }
+    
+    return this;
+  }
+
+  /**
+   * Check if transaction will likely succeed
+   */
+  async validate(): Promise<{ valid: boolean; error?: string; logs?: string[] }> {
+    try {
+      const simulation = await this.simulate();
+      return {
+        valid: simulation.success,
+        error: simulation.error,
+        logs: simulation.logs,
+      };
+    } catch (error) {
+      return {
+        valid: false,
+        error: (error as Error).message,
+      };
+    }
+  }
+
+  /**
+   * Get all unique accounts that will be accessed
+   */
+  getAccounts(): PublicKey[] {
+    const accounts = new Set<string>();
+    
+    for (const ix of this.instructions) {
+      accounts.add(ix.programId.toBase58());
+      for (const key of ix.keys) {
+        accounts.add(key.pubkey.toBase58());
+      }
+    }
+    
+    return Array.from(accounts).map(addr => new PublicKey(addr));
+  }
+
+  /**
+   * Check if transaction exceeds size limit
+   */
+  async exceedsSizeLimit(): Promise<boolean> {
+    const size = await this.getSerializedSize();
+    return size > 1232; // Max transaction size
+  }
 }
 
 /**
@@ -293,3 +366,16 @@ export async function loadAddressLookupTables(
   );
   return results.filter((r): r is AddressLookupTableAccount => r !== null);
 }
+
+/**
+ * Find commonly used ALTs for popular programs
+ */
+export const COMMON_LOOKUP_TABLES = {
+  // Jupiter
+  JUPITER_V6: new PublicKey('GxS6FiQ3mNnAar9HGQ6MxvVUxL2PBRmMCpB1vmLtKs9q'),
+  // Raydium
+  RAYDIUM_V4: new PublicKey('B1gSV5VQYBA6BFd3SVFR9qLVtC6tLJ89MHUXz8nL9j6K'),
+  // Orca
+  ORCA_WHIRLPOOL: new PublicKey('EwHjUn4HvnbQuPmQQWC7R4kAVSYLYkwXnU9F8gKVYPU3'),
+};
+

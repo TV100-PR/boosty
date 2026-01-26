@@ -106,7 +106,7 @@ export async function getTokenAccountsByOwner(
   
   const tokenAccounts: TokenAccountInfo[] = [];
   
-  for (const { pubkey, account } of accounts.value) {
+  for (const { pubkey } of accounts.value) {
     try {
       const tokenAccount = await getTokenAccount(connection, pubkey);
       if (tokenAccount) {

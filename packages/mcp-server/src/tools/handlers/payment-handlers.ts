@@ -10,15 +10,6 @@ import {
 } from '../../payments/config.js';
 import { allToolDefinitions } from '../index.js';
 
-// USDC addresses by network
-const USDC_ADDRESSES: Record<string, string> = {
-  'base-mainnet': '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-  'base-sepolia': '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
-  'ethereum-mainnet': '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-  'solana-mainnet': 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-  'solana-devnet': '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
-};
-
 export interface PaymentPricingResult {
   enabled: boolean;
   defaultCurrency: string;
@@ -185,47 +176,159 @@ export async function getToolPriceHandler(args: { tool_name: string }): Promise<
   };
 }
 
+// Comprehensive USDC addresses for all supported networks
+const NETWORK_INFO: Record<string, { name: string; chainId: string; usdcAddress: string }> = {
+  'base-mainnet': {
+    name: 'Base Mainnet',
+    chainId: 'eip155:8453',
+    usdcAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+  },
+  'base-sepolia': {
+    name: 'Base Sepolia (Testnet)',
+    chainId: 'eip155:84532',
+    usdcAddress: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
+  },
+  'ethereum-mainnet': {
+    name: 'Ethereum Mainnet',
+    chainId: 'eip155:1',
+    usdcAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+  },
+  'arbitrum-one': {
+    name: 'Arbitrum One',
+    chainId: 'eip155:42161',
+    usdcAddress: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
+  },
+  'optimism': {
+    name: 'Optimism',
+    chainId: 'eip155:10',
+    usdcAddress: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
+  },
+  'polygon': {
+    name: 'Polygon',
+    chainId: 'eip155:137',
+    usdcAddress: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
+  },
+  'solana-mainnet': {
+    name: 'Solana Mainnet',
+    chainId: 'solana:mainnet',
+    usdcAddress: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+  },
+  'solana-devnet': {
+    name: 'Solana Devnet',
+    chainId: 'solana:devnet',
+    usdcAddress: '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
+  },
+};
+
+// Reverse lookup by chainId
+const NETWORK_BY_CHAIN_ID: Record<string, string> = Object.fromEntries(
+  Object.entries(NETWORK_INFO).map(([key, info]) => [info.chainId, key])
+);
+
 /**
  * Get supported payment networks
  */
 export async function getPaymentNetworks(): Promise<PaymentNetworksResult> {
-  const currentNetwork = process.env.X402_NETWORK || 'base-mainnet';
+  const currentNetwork = process.env.X402_NETWORK || 'eip155:8453';
   
-  const networks: PaymentNetworksResult['networks'] = [
-    {
-      name: 'Base Mainnet',
-      chainId: 'eip155:8453',
-      usdcAddress: USDC_ADDRESSES['base-mainnet'] ?? '',
-      supported: true,
-    },
-    {
-      name: 'Base Sepolia (Testnet)',
-      chainId: 'eip155:84532',
-      usdcAddress: USDC_ADDRESSES['base-sepolia'] ?? '',
-      supported: true,
-    },
-    {
-      name: 'Ethereum Mainnet',
-      chainId: 'eip155:1',
-      usdcAddress: USDC_ADDRESSES['ethereum-mainnet'] ?? '',
-      supported: true,
-    },
-    {
-      name: 'Solana Mainnet',
-      chainId: 'solana:mainnet',
-      usdcAddress: USDC_ADDRESSES['solana-mainnet'] ?? '',
-      supported: true,
-    },
-    {
-      name: 'Solana Devnet',
-      chainId: 'solana:devnet',
-      usdcAddress: USDC_ADDRESSES['solana-devnet'] ?? '',
-      supported: true,
-    },
-  ];
+  const networks: PaymentNetworksResult['networks'] = Object.values(NETWORK_INFO).map(info => ({
+    name: info.name,
+    chainId: info.chainId,
+    usdcAddress: info.usdcAddress,
+    supported: true,
+  }));
 
   return {
     networks,
     currentNetwork,
+  };
+}
+
+export interface PaymentAnalyticsResult {
+  enabled: boolean;
+  totalPayments: number;
+  totalRevenue: string;
+  failedPayments: number;
+  successRate: number;
+  averageSettlementTimeMs: number;
+  topTools: Array<{ tool: string; count: number; revenue: string }>;
+  networkBreakdown: Array<{ network: string; count: number; revenue: string }>;
+}
+
+/**
+ * Get payment analytics (requires payment middleware to be active)
+ */
+export async function getPaymentAnalytics(): Promise<PaymentAnalyticsResult> {
+  // Note: In a real implementation, this would pull from the payment service
+  // For now, we return stats indicating payments are not yet tracked in this session
+  const enabled = !!process.env.X402_PAY_TO_ADDRESS;
+  
+  return {
+    enabled,
+    totalPayments: 0,
+    totalRevenue: '$0.00',
+    failedPayments: 0,
+    successRate: 100,
+    averageSettlementTimeMs: 0,
+    topTools: [],
+    networkBreakdown: [],
+  };
+}
+
+export interface NetworkValidationResult {
+  network: string;
+  isSupported: boolean;
+  chainName?: string;
+  usdcAddress?: string;
+  decimals?: number;
+  symbol?: string;
+  explorerUrl?: string;
+}
+
+/**
+ * Validate a payment network and get its info
+ */
+export async function validatePaymentNetwork(args: { network: string }): Promise<NetworkValidationResult> {
+  const { network } = args;
+  
+  // Check by chainId directly or by short name
+  const networkKey = NETWORK_BY_CHAIN_ID[network] || network;
+  const info = NETWORK_INFO[networkKey];
+  
+  if (!info) {
+    return {
+      network,
+      isSupported: false,
+    };
+  }
+
+  // Build explorer URL based on network
+  let explorerUrl: string | undefined;
+  if (network.startsWith('eip155:')) {
+    const chainIdStr = network.split(':')[1];
+    const chainId = chainIdStr ? parseInt(chainIdStr, 10) : 0;
+    const explorerUrls: Record<number, string> = {
+      1: 'https://etherscan.io',
+      8453: 'https://basescan.org',
+      84532: 'https://sepolia.basescan.org',
+      42161: 'https://arbiscan.io',
+      10: 'https://optimistic.etherscan.io',
+      137: 'https://polygonscan.com',
+    };
+    explorerUrl = explorerUrls[chainId];
+  } else if (network.startsWith('solana:')) {
+    explorerUrl = network.includes('devnet') 
+      ? 'https://explorer.solana.com/?cluster=devnet'
+      : 'https://explorer.solana.com';
+  }
+
+  return {
+    network: info.chainId,
+    isSupported: true,
+    chainName: info.name,
+    usdcAddress: info.usdcAddress,
+    decimals: 6,
+    symbol: 'USDC',
+    explorerUrl,
   };
 }

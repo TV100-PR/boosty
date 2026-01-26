@@ -90,4 +90,6 @@ export const toolHandlers: Record<string, (args: any) => Promise<any>> = {
   get_payment_pricing: paymentHandlers.getPaymentPricing,
   get_tool_price: paymentHandlers.getToolPriceHandler,
   get_payment_networks: paymentHandlers.getPaymentNetworks,
+  get_payment_analytics: paymentHandlers.getPaymentAnalytics,
+  validate_payment_network: paymentHandlers.validatePaymentNetwork,
 };

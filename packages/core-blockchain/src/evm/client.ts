@@ -74,10 +74,10 @@ export class EVMConnectionManager {
 export class EVMClient {
   private publicClient: PublicClient;
   private walletClient?: WalletClient;
-  private config: EVMClientConfig;
+  private readonly chainId: number;
 
   constructor(config: EVMClientConfig) {
-    this.config = config;
+    this.chainId = config.chainId;
     const chain = CHAIN_MAP[config.chainId];
     
     if (!chain) {
@@ -99,6 +99,10 @@ export class EVMClient {
 
   getPublicClient(): PublicClient {
     return this.publicClient;
+  }
+
+  getChainId(): number {
+    return this.chainId;
   }
 
   getWalletClient(): WalletClient | undefined {

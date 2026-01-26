@@ -59,24 +59,70 @@ interface JitoBundleStatus {
 }
 
 export class JitoBundleSender {
-  private readonly blockEngineUrl: string;
+  private blockEngineUrl: string;
   private tipAccountIndex: number = 0;
+  private blockEngineLatencies: Map<string, number> = new Map();
 
   constructor(
     private readonly connection: Connection,
     blockEngineUrl?: string
   ) {
     // Use provided URL or select based on region
-    this.blockEngineUrl = blockEngineUrl || this.selectBlockEngine();
+    this.blockEngineUrl = blockEngineUrl || JITO_BLOCK_ENGINES[0];
+    
+    // Start latency measurement in background
+    this.measureBlockEngineLatencies().catch(() => {});
     
     logger.info('Jito bundle sender initialized', { blockEngine: this.blockEngineUrl });
   }
 
   /**
-   * Select block engine based on latency (simplified - just rotates)
+   * Measure latency to all block engines and select fastest
    */
-  private selectBlockEngine(): string {
-    return JITO_BLOCK_ENGINES[0];
+  private async measureBlockEngineLatencies(): Promise<void> {
+    const results = await Promise.all(
+      JITO_BLOCK_ENGINES.map(async (url) => {
+        const start = Date.now();
+        try {
+          const response = await fetch(`${url}/api/v1/bundles`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'getTipAccounts', params: [] }),
+            signal: AbortSignal.timeout(5000),
+          });
+          if (response.ok) {
+            return { url, latency: Date.now() - start };
+          }
+        } catch {
+          // Ignore errors
+        }
+        return { url, latency: Infinity };
+      })
+    );
+
+    for (const { url, latency } of results) {
+      this.blockEngineLatencies.set(url, latency);
+    }
+
+    // Select fastest
+    const fastest = results.reduce((best, current) => 
+      current.latency < best.latency ? current : best
+    );
+    
+    if (fastest.latency < Infinity) {
+      this.blockEngineUrl = fastest.url;
+      logger.info('Selected fastest block engine', { 
+        url: fastest.url, 
+        latencyMs: fastest.latency 
+      });
+    }
+  }
+
+  /**
+   * Get block engine latencies
+   */
+  getBlockEngineLatencies(): Record<string, number> {
+    return Object.fromEntries(this.blockEngineLatencies);
   }
 
   /**
@@ -86,6 +132,13 @@ export class JitoBundleSender {
     const account = JITO_TIP_ACCOUNTS[this.tipAccountIndex];
     this.tipAccountIndex = (this.tipAccountIndex + 1) % JITO_TIP_ACCOUNTS.length;
     return new PublicKey(account);
+  }
+
+  /**
+   * Get all tip accounts
+   */
+  getTipAccounts(): PublicKey[] {
+    return JITO_TIP_ACCOUNTS.map(a => new PublicKey(a));
   }
 
   /**

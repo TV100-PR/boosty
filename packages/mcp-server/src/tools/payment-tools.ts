@@ -35,10 +35,32 @@ export const paymentToolDefinitions: Tool[] = [
   },
   {
     name: 'get_payment_networks',
-    description: 'Get supported payment networks and their USDC contract addresses',
+    description: 'Get supported payment networks and their USDC contract addresses. Includes Base, Ethereum, Arbitrum, Optimism, Polygon, and Solana.',
     inputSchema: {
       type: 'object',
       properties: {},
+    },
+  },
+  {
+    name: 'get_payment_analytics',
+    description: 'Get payment analytics and revenue statistics. Shows total payments, revenue, success rate, and breakdown by tool and network.',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'validate_payment_network',
+    description: 'Validate if a payment network is supported and get its USDC token information',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        network: {
+          type: 'string',
+          description: 'Network identifier (e.g., eip155:8453 for Base, eip155:42161 for Arbitrum)',
+        },
+      },
+      required: ['network'],
     },
   },
 ];

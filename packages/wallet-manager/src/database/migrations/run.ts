@@ -4,12 +4,15 @@
  */
 
 import { readFileSync, readdirSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { join } from 'path';
 import postgres from 'postgres';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+// Use __dirname directly - available in Node.js CommonJS context
+// For ESM, this would use: const __dirname = dirname(fileURLToPath(import.meta.url));
+// @ts-ignore - __dirname is available at runtime
+const migrationsDir = typeof __dirname !== 'undefined' 
+  ? __dirname 
+  : process.cwd();
 
 /**
  * Get database URL from environment
@@ -26,8 +29,8 @@ function getDatabaseUrl(): string {
  * Get list of migration files
  */
 function getMigrationFiles(): string[] {
-  const migrationsDir = __dirname;
-  const files = readdirSync(migrationsDir)
+  const dir = migrationsDir;
+  const files = readdirSync(dir)
     .filter(file => file.endsWith('.sql'))
     .sort();
   return files;

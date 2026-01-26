@@ -17,17 +17,33 @@ const scryptAsync = promisify(scrypt);
 
 /**
  * Default encryption configuration
- * Following OWASP recommendations for secure key derivation
+ * Following OWASP 2024 recommendations for secure key derivation
+ * scryptN=2^17 (131072) provides ~128-bit security level with ~128MB memory
  */
 export const DEFAULT_ENCRYPTION_CONFIG: EncryptionConfig = {
   algorithm: 'aes-256-gcm',
   keyLength: 32,
   saltLength: 32,
-  ivLength: 16,
+  ivLength: 12, // GCM optimal IV length is 12 bytes (96 bits)
   tagLength: 16,
-  scryptN: 16384, // CPU/memory cost parameter
-  scryptR: 8,      // Block size
-  scryptP: 1,      // Parallelization
+  scryptN: 131072, // 2^17 - OWASP recommended for high-security (128MB memory)
+  scryptR: 8,       // Block size (affects memory usage: 128 * r * p bytes)
+  scryptP: 1,       // Parallelization factor
+};
+
+/**
+ * Lighter encryption config for less sensitive operations
+ * Uses 2^15 (32768) for faster operations with ~32MB memory
+ */
+export const LIGHT_ENCRYPTION_CONFIG: EncryptionConfig = {
+  algorithm: 'aes-256-gcm',
+  keyLength: 32,
+  saltLength: 32,
+  ivLength: 12,
+  tagLength: 16,
+  scryptN: 32768, // 2^15 - Faster but still secure
+  scryptR: 8,
+  scryptP: 1,
 };
 
 /**
@@ -36,11 +52,88 @@ export const DEFAULT_ENCRYPTION_CONFIG: EncryptionConfig = {
 export const MIN_PASSWORD_LENGTH = 12;
 
 /**
+ * Calculate Shannon entropy of a string (bits per character)
+ * @param str - The string to analyze
+ * @returns Entropy in bits
+ */
+export function calculateEntropy(str: string): number {
+  if (!str || str.length === 0) return 0;
+  
+  const charFrequency = new Map<string, number>();
+  for (const char of str) {
+    charFrequency.set(char, (charFrequency.get(char) || 0) + 1);
+  }
+  
+  let entropy = 0;
+  const len = str.length;
+  
+  for (const count of charFrequency.values()) {
+    const probability = count / len;
+    entropy -= probability * Math.log2(probability);
+  }
+  
+  // Return total entropy (bits per char * length)
+  return entropy * str.length;
+}
+
+/**
+ * Estimate password strength based on character pool
+ * @param password - The password to analyze
+ * @returns Estimated bits of entropy
+ */
+export function estimatePasswordStrength(password: string): {
+  entropy: number;
+  strength: 'weak' | 'fair' | 'strong' | 'very-strong';
+  feedback: string[];
+} {
+  const feedback: string[] = [];
+  let poolSize = 0;
+  
+  const hasLowercase = /[a-z]/.test(password);
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasDigits = /[0-9]/.test(password);
+  const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(password);
+  const hasUnicode = /[^\x00-\x7F]/.test(password);
+  
+  if (hasLowercase) poolSize += 26;
+  if (hasUppercase) poolSize += 26;
+  if (hasDigits) poolSize += 10;
+  if (hasSpecial) poolSize += 32;
+  if (hasUnicode) poolSize += 100; // Approximate for common unicode
+  
+  // Entropy = log2(poolSize^length)
+  const entropy = password.length * Math.log2(poolSize || 1);
+  
+  // Check for common patterns that reduce effective entropy
+  if (/^[a-z]+$/i.test(password)) {
+    feedback.push('Add numbers and special characters');
+  }
+  if (/(.)(\1{2,})/.test(password)) {
+    feedback.push('Avoid repeated characters');
+  }
+  if (/^(123|abc|qwerty|password)/i.test(password)) {
+    feedback.push('Avoid common patterns');
+  }
+  if (password.length < 16) {
+    feedback.push('Consider using a longer passphrase');
+  }
+  
+  let strength: 'weak' | 'fair' | 'strong' | 'very-strong';
+  if (entropy < 40) strength = 'weak';
+  else if (entropy < 60) strength = 'fair';
+  else if (entropy < 80) strength = 'strong';
+  else strength = 'very-strong';
+  
+  return { entropy, strength, feedback };
+}
+
+/**
  * Validate password strength
  * @param password - The password to validate
+ * @param requireStrong - Whether to require 'strong' or better (default: true)
  * @throws WalletManagerError if password is too weak
  */
-export function validatePassword(password: string): void {
+export function validatePassword(password: string, requireStrong: boolean = true): void {
   if (!password || typeof password !== 'string') {
     throw new WalletManagerError(
       'PASSWORD_TOO_WEAK' as WalletErrorCode,
@@ -52,6 +145,21 @@ export function validatePassword(password: string): void {
     throw new WalletManagerError(
       'PASSWORD_TOO_WEAK' as WalletErrorCode,
       `Password must be at least ${MIN_PASSWORD_LENGTH} characters long`
+    );
+  }
+
+  const { entropy, feedback } = estimatePasswordStrength(password);
+  
+  // Require at least 60 bits of entropy for wallet encryption
+  const minEntropy = requireStrong ? 60 : 40;
+  
+  if (entropy < minEntropy) {
+    const suggestions = feedback.length > 0 
+      ? `. Suggestions: ${feedback.join('; ')}`
+      : '';
+    throw new WalletManagerError(
+      'PASSWORD_TOO_WEAK' as WalletErrorCode,
+      `Password entropy (${Math.floor(entropy)} bits) is below required ${minEntropy} bits${suggestions}`
     );
   }
 

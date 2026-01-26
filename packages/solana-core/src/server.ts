@@ -343,6 +343,75 @@ const TOOLS: Tool[] = [
       properties: {},
     },
   },
+  {
+    name: 'searchTokens',
+    description: 'Search for tokens by name or symbol on Jupiter',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: {
+          type: 'string',
+          description: 'Search query (token name, symbol, or mint address)',
+        },
+        limit: {
+          type: 'number',
+          description: 'Maximum results to return',
+          default: 10,
+        },
+      },
+      required: ['query'],
+    },
+  },
+  {
+    name: 'getTokenStats',
+    description: 'Get trading statistics for a token (volume, price change, liquidity)',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        mint: {
+          type: 'string',
+          description: 'Token mint address',
+        },
+      },
+      required: ['mint'],
+    },
+  },
+  {
+    name: 'getTrendingTokens',
+    description: 'Get currently trending tokens by trading volume',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        limit: {
+          type: 'number',
+          description: 'Number of tokens to return',
+          default: 10,
+        },
+      },
+    },
+  },
+  {
+    name: 'getLimitOrders',
+    description: 'Get open limit orders for a wallet on Jupiter',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        walletAddress: {
+          type: 'string',
+          description: 'Wallet address to check',
+        },
+      },
+      required: ['walletAddress'],
+    },
+  },
+  {
+    name: 'getNetworkStatus',
+    description: 'Get Solana network status and health metrics',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
 ];
 
 // ============================================================================
@@ -848,6 +917,113 @@ export class SolanaMCPServer {
           dexes: Object.entries(DEX_PROGRAMS).map(([name, programId]) => ({
             name,
             programId: programId.toBase58(),
+          })),
+        };
+      }
+
+      case 'searchTokens': {
+        const query = args.query as string;
+        const limit = (args.limit as number) || 10;
+        
+        const tokens = await this.jupiterClient.searchTokens(query, limit);
+        
+        return {
+          query,
+          count: tokens.length,
+          tokens: tokens.map(t => ({
+            mint: t.address,
+            name: t.name,
+            symbol: t.symbol,
+            decimals: t.decimals,
+            logoURI: t.logoURI,
+          })),
+        };
+      }
+
+      case 'getTokenStats': {
+        const mint = args.mint as string;
+        
+        if (!isValidPublicKey(mint)) {
+          throw new Error('Invalid mint address');
+        }
+        
+        const stats = await this.jupiterClient.getTokenStats(mint);
+        
+        if (!stats) {
+          throw new Error(`Stats not available for ${mint}`);
+        }
+        
+        return {
+          mint,
+          volume24h: stats.volume24h,
+          priceChange24h: stats.priceChange24h,
+          liquidity: stats.liquidity,
+        };
+      }
+
+      case 'getTrendingTokens': {
+        const limit = (args.limit as number) || 10;
+        
+        const trending = await this.jupiterClient.getTrendingTokens(limit);
+        
+        return {
+          count: trending.length,
+          tokens: trending,
+        };
+      }
+
+      case 'getLimitOrders': {
+        const walletAddress = args.walletAddress as string;
+        
+        if (!isValidPublicKey(walletAddress)) {
+          throw new Error('Invalid wallet address');
+        }
+        
+        const orders = await this.jupiterClient.getOpenOrders(walletAddress);
+        
+        return {
+          walletAddress,
+          count: orders.length,
+          orders: orders.map(o => ({
+            publicKey: o.publicKey,
+            maker: o.account.maker,
+            inputMint: o.account.inputMint,
+            outputMint: o.account.outputMint,
+            makingAmount: o.account.makingAmount,
+            takingAmount: o.account.takingAmount,
+            expiredAt: o.account.expiredAt,
+          })),
+        };
+      }
+
+      case 'getNetworkStatus': {
+        const connection = this.connectionManager.getConnection();
+        
+        const [slot, blockHeight, health, epochInfo] = await Promise.all([
+          this.connectionManager.getSlot(),
+          connection.getBlockHeight(),
+          this.connectionManager.getAllEndpointHealth(),
+          connection.getEpochInfo(),
+        ]);
+        
+        // Get recent performance samples
+        const perfSamples = await connection.getRecentPerformanceSamples(5);
+        const avgTps = perfSamples.length > 0 
+          ? perfSamples.reduce((sum, s) => sum + s.numTransactions / s.samplePeriodSecs, 0) / perfSamples.length
+          : 0;
+        
+        return {
+          slot,
+          blockHeight,
+          epoch: epochInfo.epoch,
+          epochProgress: ((epochInfo.slotIndex / epochInfo.slotsInEpoch) * 100).toFixed(2) + '%',
+          avgTps: Math.round(avgTps),
+          healthyEndpoints: health.filter(h => h.healthy).length,
+          totalEndpoints: health.length,
+          endpoints: health.map(h => ({
+            name: h.endpoint,
+            healthy: h.healthy,
+            latencyMs: h.latencyMs,
           })),
         };
       }

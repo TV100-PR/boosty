@@ -1,6 +1,6 @@
 /**
  * Signing Queue
- * Rate-limited queue for transaction signing operations
+ * Rate-limited queue for transaction signing operations with retry logic
  */
 
 import { v4 as uuidv4 } from 'uuid';
@@ -18,6 +18,58 @@ const DEFAULT_RATE_LIMIT = 60;
 const RATE_LIMIT_WINDOW_MS = 60_000;
 
 /**
+ * Default retry configuration
+ */
+const DEFAULT_MAX_RETRIES = 3;
+const DEFAULT_BASE_DELAY_MS = 1000;
+const DEFAULT_MAX_DELAY_MS = 30000;
+
+/**
+ * Retry configuration
+ */
+export interface RetryConfig {
+  maxRetries: number;
+  baseDelayMs: number;
+  maxDelayMs: number;
+  jitterFactor: number; // 0-1, adds randomness to prevent thundering herd
+}
+
+/**
+ * Calculate exponential backoff delay with jitter
+ * @param attempt - Current attempt number (0-indexed)
+ * @param config - Retry configuration
+ * @returns Delay in milliseconds
+ */
+export function calculateBackoffDelay(
+  attempt: number,
+  config: RetryConfig = {
+    maxRetries: DEFAULT_MAX_RETRIES,
+    baseDelayMs: DEFAULT_BASE_DELAY_MS,
+    maxDelayMs: DEFAULT_MAX_DELAY_MS,
+    jitterFactor: 0.3,
+  }
+): number {
+  // Exponential backoff: baseDelay * 2^attempt
+  const exponentialDelay = config.baseDelayMs * Math.pow(2, attempt);
+  
+  // Cap at max delay
+  const cappedDelay = Math.min(exponentialDelay, config.maxDelayMs);
+  
+  // Add jitter: delay * (1 - jitter + random * 2 * jitter)
+  const jitter = config.jitterFactor * (2 * Math.random() - 1);
+  const delayWithJitter = cappedDelay * (1 + jitter);
+  
+  return Math.floor(delayWithJitter);
+}
+
+/**
+ * Sleep for a given duration
+ */
+async function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
  * Signing queue state
  */
 interface QueueState {
@@ -25,22 +77,30 @@ interface QueueState {
   timestamps: number[];
   rateLimit: number;
   processing: boolean;
+  retryConfig: RetryConfig;
 }
 
 /**
- * Signing Queue implementation
+ * Signing Queue implementation with retry support
  */
 export class SigningQueue {
   private state: QueueState;
 
   constructor(options?: {
     rateLimit?: number;
+    retryConfig?: Partial<RetryConfig>;
   }) {
     this.state = {
       entries: new Map(),
       timestamps: [],
       rateLimit: options?.rateLimit || DEFAULT_RATE_LIMIT,
       processing: false,
+      retryConfig: {
+        maxRetries: options?.retryConfig?.maxRetries ?? DEFAULT_MAX_RETRIES,
+        baseDelayMs: options?.retryConfig?.baseDelayMs ?? DEFAULT_BASE_DELAY_MS,
+        maxDelayMs: options?.retryConfig?.maxDelayMs ?? DEFAULT_MAX_DELAY_MS,
+        jitterFactor: options?.retryConfig?.jitterFactor ?? 0.3,
+      },
     };
   }
 
@@ -231,6 +291,96 @@ export class SigningQueue {
       }
     }
   }
+
+  /**
+   * Execute a function with exponential backoff retry
+   * @param fn - Async function to execute
+   * @param shouldRetry - Optional function to determine if error is retryable
+   * @returns Result of the function
+   */
+  async executeWithRetry<T>(
+    fn: () => Promise<T>,
+    shouldRetry?: (error: Error, attempt: number) => boolean
+  ): Promise<T> {
+    let lastError: Error | undefined;
+    
+    for (let attempt = 0; attempt <= this.state.retryConfig.maxRetries; attempt++) {
+      try {
+        // Wait for rate limit before each attempt
+        await this.waitForRateLimit();
+        
+        // Execute the function
+        const result = await fn();
+        this.recordSigning();
+        return result;
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+        
+        // Check if we should retry
+        const isRetryable = shouldRetry 
+          ? shouldRetry(lastError, attempt)
+          : this.isRetryableError(lastError);
+        
+        if (!isRetryable || attempt === this.state.retryConfig.maxRetries) {
+          break;
+        }
+        
+        // Calculate backoff delay
+        const delay = calculateBackoffDelay(attempt, this.state.retryConfig);
+        console.warn(
+          `Signing attempt ${attempt + 1} failed, retrying in ${delay}ms: ${lastError.message}`
+        );
+        
+        await sleep(delay);
+      }
+    }
+    
+    throw lastError || new Error('Unknown error during retry');
+  }
+
+  /**
+   * Determine if an error is retryable
+   * @param error - The error to check
+   * @returns True if the error is retryable
+   */
+  private isRetryableError(error: Error): boolean {
+    const message = error.message.toLowerCase();
+    
+    // Retryable network/RPC errors
+    const retryablePatterns = [
+      'timeout',
+      'econnreset',
+      'econnrefused',
+      'network',
+      'socket hang up',
+      'rate limit',
+      '429', // Too Many Requests
+      '503', // Service Unavailable
+      '502', // Bad Gateway
+      'blockhash not found',
+      'block height exceeded',
+      'transaction simulation failed', // May succeed on retry with new blockhash
+    ];
+    
+    return retryablePatterns.some(pattern => message.includes(pattern));
+  }
+
+  /**
+   * Get the current retry configuration
+   */
+  getRetryConfig(): RetryConfig {
+    return { ...this.state.retryConfig };
+  }
+
+  /**
+   * Update retry configuration
+   */
+  setRetryConfig(config: Partial<RetryConfig>): void {
+    this.state.retryConfig = {
+      ...this.state.retryConfig,
+      ...config,
+    };
+  }
 }
 
 /**
@@ -238,6 +388,7 @@ export class SigningQueue {
  */
 export function createSigningQueue(options?: {
   rateLimit?: number;
+  retryConfig?: Partial<RetryConfig>;
 }): SigningQueue {
   return new SigningQueue(options);
 }

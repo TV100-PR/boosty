@@ -155,7 +155,10 @@ export async function getMultipleTokenMetadata(
     const accounts = await connection.getMultipleAccountsInfo(pdas);
     
     for (let j = 0; j < batch.length; j++) {
-      const { mint } = batch[j];
+      const batchItem = batch[j];
+      if (!batchItem) continue;
+      
+      const { mint } = batchItem;
       const accountInfo = accounts[j];
       
       if (accountInfo) {

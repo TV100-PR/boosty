@@ -8,27 +8,50 @@ import { PythHttpClient, getPythProgramKeyForCluster, PriceStatus } from '@pythn
 import { PriceData, PriceFeed, OracleSubscription } from '../types.js';
 import { logger } from '../utils/logger.js';
 
-// Well-known Pyth price feed IDs (mainnet)
+// Well-known Pyth price feed IDs (mainnet) - comprehensive list
 const PYTH_PRICE_FEEDS: Record<string, string> = {
-  // Crypto
+  // Major Crypto
   'SOL/USD': 'H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG',
   'BTC/USD': 'GVXRSBjFk6e6J3NbVPXohDJetcTjaeeuykUpbQF8UoMU',
   'ETH/USD': 'JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWdB',
+  // Stablecoins
   'USDC/USD': 'Gnt27xtC473ZT2Mw5u8wZ68Z3gULkSTb5DuxJy7eJotD',
   'USDT/USD': '3vxLXJqLqF3JG5TCbYycbKWRBbCJQLxQmBGCkyqEEefL',
+  'DAI/USD': 'CtJ8EkqLmeYyGB8s4jevpeNsvmD4dxVR2krfsDLcvV8Y',
+  'PYUSD/USD': 'HpMoKp3TCd3QT4MWYUKk2zGBwRzaNLd7a2SYVVW1dRz',
+  // Memecoins
   'BONK/USD': '8ihFLu5FimgTQ1Unh4dVyEHUGodJ5gJQCrQf4KUVB9bN',
-  'JUP/USD': 'g6eRCbboSwK4tSWngn773RCMexr1APQr4uA9bGZBYfo',
   'WIF/USD': '4Hg5MRBgxJM1K5dpcMxpdjPKwJXLiSrqXbZPMPKFMPAF',
+  // DeFi Tokens
+  'JUP/USD': 'g6eRCbboSwK4tSWngn773RCMexr1APQr4uA9bGZBYfo',
   'PYTH/USD': 'nrYkQQQur7z8rYTST3G9GqATviK5SxTDkrqd21MW6Ue',
   'RAY/USD': 'AnLf8tVYCM816gmBjiy8n5bQ5DsRFwSeFLXJ2P4T7fAX',
   'ORCA/USD': '4ivThkX8uRxBpHsdWSqyXYihzKF3zpRGAUCqyuagnLoV',
+  'MNDE/USD': '4dusJxxxiYrMTLGYS6cCAyu3gPn2xXLBjS7orCTfmjkg',
+  // Liquid Staking
   'MSOL/USD': 'E4v1BBgoso9s64TQvmyownAVJbhbEPGyzA3qn4n46qj9',
   'JITOSOL/USD': '7yyaeuJ1GGtVBLT2z2xub5ZWYKaNhF28mj1RdV4VDFVk',
-  // Forex & Commodities
+  'BSOL/USD': 'AFrYBhb5wKQtxRS9UA9YRS4V3dwFm7SqmS6DHKq6YVgo',
+  // Infrastructure
+  'RENDER/USD': 'AB3MMszDxBWdfuqAhGMnQRDPrq9mPuXPRWVqAZiXPVvx',
+  'HNT/USD': '4DdmDswskDxXGpwHrXUfn2CNUm9rt21ac79GHNTN3J33',
+  // Other L1s
+  'AVAX/USD': 'Ax9ujW5B9oqcv59N8m6f1BpTBq2rGeGaBcpKjC5UYsXU',
+  'MATIC/USD': '7KVswB9vkCgeM3SHP7aGDijvdRAHK8P5wi9JXViCrtYh',
+  'NEAR/USD': 'ECSFWQ1bnnpqPVvoy9237t2wddZAaHisW88mYxuEHKWf',
+  'ATOM/USD': 'CrCpTerNqtZvqLcKqz1k13oVeXV9WkMD2zA9hBKXrsbN',
+  'DOT/USD': 'EcV1X1gY2yb4KXxjVQtTHTbioum2gvmPnFk4zYAt7zne',
+  'LINK/USD': 'ALdkqtyNGj6MFVSkvYJHpU24WPfSqLDLMnzPPM3xgPz7',
+  'UNI/USD': '4DZ8T7P1RJMvWvPDRNfWNwHRpvGQhL1pqNdLaLSKpoPs',
+  'AAVE/USD': '3wDLxHLkFTqXDLNcq8qhKuC4qYfBq4yLi4AH5XPmgJyM',
+  // Forex
   'EUR/USD': 'a995d00bb36a63cef7fd2c287dc105fc8f3d93779f062f09551b0af3e81ec30b',
   'GBP/USD': '84c2dde9633d93d1bcad84e7dc41c9d56578b7ec52fabedc1f335d673df0a7c1',
+  'JPY/USD': 'ef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d',
+  // Commodities
   'XAU/USD': '765d2ba906dbc32ca17cc11f5310a89e9ee1f6420508c63c1d82d5a5b31c75e2',
   'XAG/USD': 'f2fb02c32b055c805e7238d628e5e9dadef274376114eb1f012337cabe93871e',
+  'WTI/USD': 'c7c60099c12805e2f4c9ed1c972a74a3c7a71c2e4ccd30c0c6e9b7ff6f01c3c9',
 };
 
 export class PythOracle {

@@ -41,11 +41,11 @@ export async function estimateComputeUnits(
 
     const { blockhash } = await connection.getLatestBlockhash();
     
-    const message = TransactionMessage.compile({
+    const message = new TransactionMessage({
       payerKey: payer,
       recentBlockhash: blockhash,
       instructions: testInstructions,
-    });
+    }).compileToV0Message();
 
     const transaction = new VersionedTransaction(message);
     

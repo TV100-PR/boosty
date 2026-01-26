@@ -12,16 +12,15 @@ import {
   Authorized,
   Lockup,
   LAMPORTS_PER_SOL,
-  StakeAuthorizationLayout,
 } from '@solana/web3.js';
 import { logger } from '../utils/logger.js';
 
-// Marinade Finance addresses
-const MARINADE_PROGRAM_ID = new PublicKey('MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD');
+// Marinade Finance addresses (reserved for future liquid staking integration)
+// const MARINADE_PROGRAM_ID = new PublicKey('MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD');
 const MSOL_MINT = new PublicKey('mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So');
 
-// Jito addresses  
-const JITO_STAKE_POOL = new PublicKey('Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb');
+// Jito addresses (reserved for future liquid staking integration)
+// const JITO_STAKE_POOL = new PublicKey('Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb');
 const JITOSOL_MINT = new PublicKey('J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn');
 
 export interface StakeAccountInfo {

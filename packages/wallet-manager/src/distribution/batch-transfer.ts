@@ -274,31 +274,110 @@ function distributeByWeights(totalAmount: bigint, weights: number[]): bigint[] {
 }
 
 /**
- * Estimate transaction fees for batch transfers
+ * Priority fee levels for transaction speed
+ */
+export type PriorityLevel = 'low' | 'medium' | 'high' | 'very-high';
+
+/**
+ * Get priority fee statistics from recent blocks
+ * @param connection - Solana connection
+ * @returns Priority fee statistics
+ */
+export async function getPriorityFeeStats(
+  connection: Connection
+): Promise<{
+  min: number;
+  low: number;
+  medium: number;
+  high: number;
+  veryHigh: number;
+  samples: number;
+}> {
+  const recentFees = await connection.getRecentPrioritizationFees();
+  
+  if (recentFees.length === 0) {
+    return { min: 0, low: 0, medium: 0, high: 0, veryHigh: 0, samples: 0 };
+  }
+  
+  const fees = recentFees.map(f => f.prioritizationFee).sort((a, b) => a - b);
+  const len = fees.length;
+  
+  return {
+    min: fees[0] ?? 0,
+    low: fees[Math.floor(len * 0.25)] ?? 0,      // 25th percentile
+    medium: fees[Math.floor(len * 0.5)] ?? 0,    // 50th percentile (median)
+    high: fees[Math.floor(len * 0.75)] ?? 0,     // 75th percentile
+    veryHigh: fees[Math.floor(len * 0.9)] ?? 0,  // 90th percentile
+    samples: len,
+  };
+}
+
+/**
+ * Get recommended priority fee for a given level
+ * @param connection - Solana connection
+ * @param level - Desired priority level
+ * @returns Recommended priority fee in micro-lamports per compute unit
+ */
+export async function getRecommendedPriorityFee(
+  connection: Connection,
+  level: PriorityLevel = 'medium'
+): Promise<number> {
+  const stats = await getPriorityFeeStats(connection);
+  
+  switch (level) {
+    case 'low': return stats.low;
+    case 'medium': return stats.medium;
+    case 'high': return stats.high;
+    case 'very-high': return stats.veryHigh;
+    default: return stats.medium;
+  }
+}
+
+/**
+ * Estimate transaction fees for batch transfers with priority level
  * @param transferCount - Number of transfers
  * @param isToken - Whether these are token transfers
  * @param connection - Solana connection
+ * @param priorityLevel - Desired priority level
  * @returns Estimated fees in lamports
  */
 export async function estimateBatchTransferFees(
   transferCount: number,
   isToken: boolean,
-  connection: Connection
-): Promise<bigint> {
+  connection: Connection,
+  priorityLevel: PriorityLevel = 'medium'
+): Promise<{
+  baseFee: bigint;
+  priorityFee: bigint;
+  totalFee: bigint;
+  transactionCount: number;
+}> {
   const batchSize = isToken ? 10 : MAX_INSTRUCTIONS_PER_TX;
   const transactionCount = Math.ceil(transferCount / batchSize);
 
-  // Get recent prioritization fees
-  const recentFees = await connection.getRecentPrioritizationFees();
-  const avgPriorityFee = recentFees.length > 0
-    ? recentFees.reduce((sum, f) => sum + f.prioritizationFee, 0) / recentFees.length
-    : 0;
+  // Calculate compute units per transaction
+  const computeUnitsPerTx = isToken 
+    ? batchSize * COMPUTE_UNITS_PER_TOKEN_TRANSFER
+    : batchSize * COMPUTE_UNITS_PER_TRANSFER;
 
-  // Base fee per signature (5000 lamports) + priority fees
+  // Get recommended priority fee (micro-lamports per compute unit)
+  const priorityFeePerCU = await getRecommendedPriorityFee(connection, priorityLevel);
+  
+  // Priority fee = (priority fee per CU * compute units) / 1,000,000
+  const priorityFeePerTx = BigInt(Math.ceil((priorityFeePerCU * computeUnitsPerTx) / 1_000_000));
+
+  // Base fee per signature (5000 lamports)
   const baseFeePerTx = BigInt(5000);
-  const priorityFeePerTx = BigInt(Math.floor(avgPriorityFee));
+  
+  const baseFee = BigInt(transactionCount) * baseFeePerTx;
+  const priorityFee = BigInt(transactionCount) * priorityFeePerTx;
 
-  return BigInt(transactionCount) * (baseFeePerTx + priorityFeePerTx);
+  return {
+    baseFee,
+    priorityFee,
+    totalFee: baseFee + priorityFee,
+    transactionCount,
+  };
 }
 
 /**

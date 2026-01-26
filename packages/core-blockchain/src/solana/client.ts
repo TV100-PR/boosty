@@ -56,10 +56,10 @@ export class SolanaConnectionManager {
 
 export class SolanaClient {
   private connection: Connection;
-  private config: SolanaClientConfig;
+  private readonly rpcUrl: string;
 
   constructor(config: SolanaClientConfig) {
-    this.config = config;
+    this.rpcUrl = config.rpcUrl;
     this.connection = new Connection(config.rpcUrl, {
       commitment: config.commitment ?? 'confirmed',
       wsEndpoint: config.wsUrl,
@@ -69,6 +69,10 @@ export class SolanaClient {
 
   getConnection(): Connection {
     return this.connection;
+  }
+
+  getRpcUrl(): string {
+    return this.rpcUrl;
   }
 
   async getSlot(): Promise<number> {

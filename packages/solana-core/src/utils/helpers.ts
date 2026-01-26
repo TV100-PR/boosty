@@ -130,3 +130,135 @@ export function estimateTokenAccountRent(): number {
 export function estimateMintRent(): number {
   return estimateRentExemption(ACCOUNT_SIZES.MINT_ACCOUNT);
 }
+
+// ============================================================================
+// Rate Limiting Utilities
+// ============================================================================
+
+/**
+ * Simple token bucket rate limiter
+ */
+export class RateLimiter {
+  private tokens: number;
+  private lastRefill: number;
+
+  constructor(
+    private readonly maxTokens: number,
+    private readonly refillRate: number, // tokens per second
+  ) {
+    this.tokens = maxTokens;
+    this.lastRefill = Date.now();
+  }
+
+  private refill(): void {
+    const now = Date.now();
+    const elapsed = (now - this.lastRefill) / 1000;
+    this.tokens = Math.min(this.maxTokens, this.tokens + elapsed * this.refillRate);
+    this.lastRefill = now;
+  }
+
+  async acquire(): Promise<void> {
+    this.refill();
+    
+    if (this.tokens >= 1) {
+      this.tokens -= 1;
+      return;
+    }
+
+    // Wait until we have a token
+    const waitTime = ((1 - this.tokens) / this.refillRate) * 1000;
+    await sleep(waitTime);
+    this.tokens = 0;
+  }
+
+  tryAcquire(): boolean {
+    this.refill();
+    
+    if (this.tokens >= 1) {
+      this.tokens -= 1;
+      return true;
+    }
+    
+    return false;
+  }
+
+  getAvailableTokens(): number {
+    this.refill();
+    return Math.floor(this.tokens);
+  }
+}
+
+// ============================================================================
+// Batch Processing Utilities
+// ============================================================================
+
+/**
+ * Process items in batches with concurrency control
+ */
+export async function batchProcess<T, R>(
+  items: T[],
+  processor: (item: T) => Promise<R>,
+  options: {
+    batchSize?: number;
+    concurrency?: number;
+    delayBetweenBatches?: number;
+  } = {}
+): Promise<R[]> {
+  const { batchSize = 10, concurrency = 5, delayBetweenBatches = 0 } = options;
+  const results: R[] = [];
+  
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+    
+    // Process batch with concurrency limit
+    const batchResults: R[] = [];
+    for (let j = 0; j < batch.length; j += concurrency) {
+      const concurrent = batch.slice(j, j + concurrency);
+      const concurrentResults = await Promise.all(concurrent.map(processor));
+      batchResults.push(...concurrentResults);
+    }
+    
+    results.push(...batchResults);
+    
+    if (delayBetweenBatches > 0 && i + batchSize < items.length) {
+      await sleep(delayBetweenBatches);
+    }
+  }
+  
+  return results;
+}
+
+/**
+ * Debounce a function
+ */
+export function debounce<T extends (...args: unknown[]) => unknown>(
+  fn: T,
+  delayMs: number
+): (...args: Parameters<T>) => void {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  
+  return (...args: Parameters<T>) => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    timeoutId = setTimeout(() => fn(...args), delayMs);
+  };
+}
+
+/**
+ * Throttle a function
+ */
+export function throttle<T extends (...args: unknown[]) => unknown>(
+  fn: T,
+  limitMs: number
+): (...args: Parameters<T>) => void {
+  let lastRun = 0;
+  
+  return (...args: Parameters<T>) => {
+    const now = Date.now();
+    if (now - lastRun >= limitMs) {
+      lastRun = now;
+      fn(...args);
+    }
+  };
+}

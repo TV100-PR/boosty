@@ -205,6 +205,10 @@ export const ALWAYS_FREE_TOOLS: string[] = [
   'get_payment_pricing',
   'get_tool_price',
   'get_payment_networks',
+  'get_payment_analytics',
+  'validate_payment_network',
+  
+  // List tools (always free)
   'list_wallets',
   'list_campaigns',
   'list_active_bots',

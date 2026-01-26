@@ -373,7 +373,7 @@ export function parseRpcError(error: unknown): SolanaError {
  */
 export async function withErrorHandling<T>(
   fn: () => Promise<T>,
-  context?: ErrorContext
+  _context?: ErrorContext
 ): Promise<T> {
   try {
     return await fn();

@@ -21,15 +21,50 @@ import { WalletManagerError } from '../types.js';
 
 /**
  * Known program IDs for transaction type identification
+ * Updated with latest DeFi protocol addresses
  */
-const KNOWN_PROGRAMS = {
-  SYSTEM: '11111111111111111111111111111111',
-  TOKEN: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
-  TOKEN_2022: 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb',
-  ASSOCIATED_TOKEN: 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
-  JUPITER: 'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB',
-  RAYDIUM: 'CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK',
-  ORCA: 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc',
+const KNOWN_PROGRAMS: Record<string, { name: string; type: TransactionType }> = {
+  // Core Solana programs
+  '11111111111111111111111111111111': { name: 'System Program', type: 'transfer' },
+  'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA': { name: 'SPL Token', type: 'token_transfer' },
+  'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb': { name: 'Token-2022', type: 'token_transfer' },
+  'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL': { name: 'Associated Token', type: 'token_transfer' },
+  'ComputeBudget111111111111111111111111111111': { name: 'Compute Budget', type: 'unknown' },
+  'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr': { name: 'Memo', type: 'unknown' },
+  
+  // Jupiter Aggregator
+  'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4': { name: 'Jupiter v6', type: 'swap' },
+  'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB': { name: 'Jupiter v4', type: 'swap' },
+  'JUP3c2Uh3WA4Ng34tw6kPd2G4C5BB21Xo36Je1s32Ph': { name: 'Jupiter v3', type: 'swap' },
+  
+  // Raydium AMM
+  'CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK': { name: 'Raydium CPMM', type: 'swap' },
+  '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8': { name: 'Raydium AMM v4', type: 'swap' },
+  'routeUGWgWzqBWFcrCfv8tritsqukccJPu3q5GPP3xS': { name: 'Raydium Router', type: 'swap' },
+  
+  // Orca Whirlpools
+  'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc': { name: 'Orca Whirlpool', type: 'swap' },
+  '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP': { name: 'Orca Legacy', type: 'swap' },
+  
+  // Meteora
+  'LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo': { name: 'Meteora DLMM', type: 'swap' },
+  'Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB': { name: 'Meteora Pools', type: 'swap' },
+  
+  // Marinade Finance (Staking)
+  'MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD': { name: 'Marinade', type: 'stake' },
+  
+  // Jito (Staking)
+  'Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb': { name: 'Jito Staking', type: 'stake' },
+  
+  // Tensor (NFT)
+  'TCMPhJdwDryooaGtiocG1u3xcYbRpiJzb283XfCZsDp': { name: 'Tensor', type: 'nft' },
+  'TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN': { name: 'Tensor Swap', type: 'nft' },
+  
+  // Magic Eden (NFT)
+  'M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K': { name: 'Magic Eden v2', type: 'nft' },
+  
+  // Pump.fun
+  '6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P': { name: 'Pump.fun', type: 'swap' },
 };
 
 /**
@@ -147,6 +182,13 @@ function parseTransaction(
 }
 
 /**
+ * Get program info from known programs
+ */
+function getProgramInfo(programId: string): { name: string; type: TransactionType } | undefined {
+  return KNOWN_PROGRAMS[programId];
+}
+
+/**
  * Determine the type of transaction based on instructions
  */
 function determineTransactionType(
@@ -155,20 +197,22 @@ function determineTransactionType(
 ): TransactionType {
   const programIds = instructions.map(ix => ix.programId);
 
-  // Check for swaps (Jupiter, Raydium, Orca)
-  if (
-    programIds.some(p =>
-      [KNOWN_PROGRAMS.JUPITER, KNOWN_PROGRAMS.RAYDIUM, KNOWN_PROGRAMS.ORCA].includes(p)
-    )
-  ) {
-    return 'swap';
+  // Check known programs and use the most specific type found
+  for (const programId of programIds) {
+    const info = getProgramInfo(programId);
+    if (info && info.type !== 'unknown') {
+      // For swaps, nfts, stake - these are definitive
+      if (['swap', 'nft', 'stake'].includes(info.type)) {
+        return info.type;
+      }
+    }
   }
 
-  // Check for token transfers
-  if (
-    programIds.includes(KNOWN_PROGRAMS.TOKEN) ||
-    programIds.includes(KNOWN_PROGRAMS.TOKEN_2022)
-  ) {
+  // Check for token transfers (SPL Token or Token-2022)
+  const tokenProgramId = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA';
+  const token2022ProgramId = 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb';
+  
+  if (programIds.includes(tokenProgramId) || programIds.includes(token2022ProgramId)) {
     // Check inner instructions for minting or burning
     if (meta?.innerInstructions) {
       for (const inner of meta.innerInstructions) {
@@ -186,15 +230,14 @@ function determineTransactionType(
   }
 
   // Check for account creation
-  if (programIds.includes(KNOWN_PROGRAMS.ASSOCIATED_TOKEN)) {
+  const associatedTokenProgramId = 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL';
+  if (programIds.includes(associatedTokenProgramId)) {
     return 'create_account';
   }
 
   // Check for simple SOL transfer
-  if (
-    programIds.length === 1 &&
-    programIds[0] === KNOWN_PROGRAMS.SYSTEM
-  ) {
+  const systemProgramId = '11111111111111111111111111111111';
+  if (programIds.length === 1 && programIds[0] === systemProgramId) {
     return 'transfer';
   }
 

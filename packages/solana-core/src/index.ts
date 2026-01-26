@@ -135,6 +135,10 @@ export {
   estimateRentExemption,
   estimateTokenAccountRent,
   estimateMintRent,
+  RateLimiter,
+  batchProcess,
+  debounce,
+  throttle,
 } from './utils/helpers.js';
 
 // Re-export commonly used Solana types

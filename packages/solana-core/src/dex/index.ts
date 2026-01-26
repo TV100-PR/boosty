@@ -10,6 +10,8 @@ export {
   type RoutePlan,
   type TokenPrice,
   type SwapParams,
+  type TokenInfo,
+  type LimitOrder,
 } from './jupiter.js';
 
 export {

@@ -5,6 +5,7 @@
 
 export {
   DEFAULT_ENCRYPTION_CONFIG,
+  LIGHT_ENCRYPTION_CONFIG,
   MIN_PASSWORD_LENGTH,
   validatePassword,
   deriveKey,
@@ -13,6 +14,8 @@ export {
   generateRandomKey,
   secureCompare,
   clearSensitiveData,
+  calculateEntropy,
+  estimatePasswordStrength,
 } from './encryption.js';
 
 export {

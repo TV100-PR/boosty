@@ -125,7 +125,9 @@ export class X402PaymentMiddleware {
     }
 
     const category = getToolCategory(toolName);
-    const settlement = await this.service.settlePayment(
+    
+    // Use retry logic for settlement
+    const settlement = await this.service.settlePaymentWithRetry(
       paymentHeader,
       toolName,
       category

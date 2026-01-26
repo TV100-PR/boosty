@@ -256,6 +256,9 @@ export type TransactionType =
   | 'close_account'
   | 'mint'
   | 'burn'
+  | 'nft'
+  | 'governance'
+  | 'lending'
   | 'unknown';
 
 /**

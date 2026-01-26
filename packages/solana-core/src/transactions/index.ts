@@ -7,6 +7,7 @@ export {
   createTransactionBuilder,
   loadAddressLookupTable,
   loadAddressLookupTables,
+  COMMON_LOOKUP_TABLES,
 } from './builder.js';
 
 export {

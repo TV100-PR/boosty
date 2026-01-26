@@ -17,6 +17,9 @@ export type PaymentNetwork =
   | 'eip155:8453'      // Base Mainnet
   | 'eip155:84532'     // Base Sepolia (testnet)
   | 'eip155:1'         // Ethereum Mainnet
+  | 'eip155:42161'     // Arbitrum One
+  | 'eip155:10'        // Optimism
+  | 'eip155:137'       // Polygon
   | 'solana:mainnet'   // Solana Mainnet
   | 'solana:devnet';   // Solana Devnet
 

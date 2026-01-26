@@ -1,6 +1,6 @@
 /**
  * Balance operations for Solana wallets
- * Fetches SOL and SPL token balances
+ * Fetches SOL and SPL token balances with real token metadata
  */
 
 import {
@@ -20,9 +20,73 @@ import type {
 import { WalletManagerError } from '../types.js';
 
 /**
- * Token metadata cache (in production, fetch from token list or Metaplex)
+ * Token metadata with additional fields
  */
-const tokenMetadataCache = new Map<string, { symbol: string; name: string; decimals: number }>();
+interface TokenMetadata {
+  symbol: string;
+  name: string;
+  decimals: number;
+  logoURI?: string;
+  coingeckoId?: string;
+}
+
+/**
+ * Token metadata cache (populated from Jupiter token list)
+ */
+const tokenMetadataCache = new Map<string, TokenMetadata>();
+
+/**
+ * Flag to track if token list has been loaded
+ */
+let tokenListLoaded = false;
+
+/**
+ * Jupiter token list URL (strict list for verified tokens)
+ */
+const JUPITER_TOKEN_LIST_URL = 'https://token.jup.ag/strict';
+
+/**
+ * Load token list from Jupiter API
+ * This fetches real token metadata including symbols, names, and decimals
+ */
+export async function loadTokenList(): Promise<void> {
+  if (tokenListLoaded) return;
+  
+  try {
+    const response = await fetch(JUPITER_TOKEN_LIST_URL, {
+      headers: { 'Accept': 'application/json' },
+    });
+    
+    if (!response.ok) {
+      console.warn(`Failed to fetch Jupiter token list: ${response.status}`);
+      return;
+    }
+    
+    const tokens = await response.json() as Array<{
+      address: string;
+      symbol: string;
+      name: string;
+      decimals: number;
+      logoURI?: string;
+      extensions?: { coingeckoId?: string };
+    }>;
+    
+    for (const token of tokens) {
+      tokenMetadataCache.set(token.address, {
+        symbol: token.symbol,
+        name: token.name,
+        decimals: token.decimals,
+        logoURI: token.logoURI,
+        coingeckoId: token.extensions?.coingeckoId,
+      });
+    }
+    
+    tokenListLoaded = true;
+    console.log(`Loaded ${tokens.length} tokens from Jupiter token list`);
+  } catch (error) {
+    console.warn('Failed to load Jupiter token list:', error);
+  }
+}
 
 /**
  * Get the balance of a wallet (SOL + all tokens)
@@ -205,7 +269,7 @@ export async function getTokenBalance(
 }
 
 /**
- * Get token metadata
+ * Get token metadata - first from cache, then from on-chain
  * @param connection - Solana connection
  * @param mint - Token mint address
  * @returns Token metadata
@@ -213,14 +277,24 @@ export async function getTokenBalance(
 async function getTokenMetadata(
   connection: Connection,
   mint: string
-): Promise<{ symbol: string; name: string; decimals: number }> {
-  // Check cache first
+): Promise<TokenMetadata> {
+  // Check cache first (includes Jupiter token list data)
   if (tokenMetadataCache.has(mint)) {
     return tokenMetadataCache.get(mint)!;
   }
 
+  // Load token list if not already loaded
+  if (!tokenListLoaded) {
+    await loadTokenList();
+    
+    // Check cache again after loading
+    if (tokenMetadataCache.has(mint)) {
+      return tokenMetadataCache.get(mint)!;
+    }
+  }
+
   try {
-    // Fetch mint info to get decimals
+    // Fetch mint info to get decimals from on-chain
     const mintPubkey = new PublicKey(mint);
     const mintInfo = await connection.getParsedAccountInfo(mintPubkey);
 
@@ -230,10 +304,10 @@ async function getTokenMetadata(
       decimals = mintInfo.value.data.parsed.info.decimals ?? 9;
     }
 
-    // In production, fetch from token list or Metaplex
-    const metadata = {
+    // For unknown tokens, use shortened address as symbol
+    const metadata: TokenMetadata = {
       symbol: shortenAddress(mint),
-      name: `Token ${shortenAddress(mint)}`,
+      name: `Unknown Token (${shortenAddress(mint)})`,
       decimals,
     };
 
@@ -241,7 +315,7 @@ async function getTokenMetadata(
     return metadata;
   } catch {
     // Return defaults on error
-    const metadata = {
+    const metadata: TokenMetadata = {
       symbol: shortenAddress(mint),
       name: `Token ${shortenAddress(mint)}`,
       decimals: 9,

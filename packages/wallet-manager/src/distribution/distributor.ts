@@ -342,15 +342,14 @@ export class FundDistributorImpl implements IFundDistributor {
    * Estimate the cost of distributing to N wallets
    */
   async estimateDistributionCost(walletCount: number): Promise<CostEstimate> {
-    const transactionCount = Math.ceil(walletCount / MAX_INSTRUCTIONS_PER_TX);
-    const totalFees = await estimateBatchTransferFees(walletCount, false, this.connection);
+    const feeEstimate = await estimateBatchTransferFees(walletCount, false, this.connection);
 
     // Estimate 400ms per transaction (conservative)
-    const estimatedTime = transactionCount * 0.4;
+    const estimatedTime = feeEstimate.transactionCount * 0.4;
 
     return {
-      transactionCount,
-      totalFees,
+      transactionCount: feeEstimate.transactionCount,
+      totalFees: feeEstimate.totalFee,
       computeUnits: walletCount * 200, // 200 CU per SOL transfer
       estimatedTime,
     };

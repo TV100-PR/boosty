@@ -1,7 +1,8 @@
 /**
  * Jupiter Quote Service
  * 
- * Handles fetching quotes from Jupiter V6 API with rate limiting and caching.
+ * Handles fetching quotes from Jupiter V6 API with rate limiting, caching,
+ * timeouts, and automatic retry with exponential backoff.
  */
 
 import type {
@@ -9,6 +10,8 @@ import type {
   QuoteResponse,
   TradingEngineConfig,
 } from '../types.js';
+import { HttpClient, type HttpClientConfig } from '../utils/http.js';
+import { NoRouteError, RateLimitError } from '../errors.js';
 
 /**
  * Jupiter Quote service for fetching optimal swap routes
@@ -16,10 +19,54 @@ import type {
 export class JupiterQuote {
   private readonly apiUrl: string;
   private readonly defaultSlippageBps: number;
+  private readonly httpClient: HttpClient;
+
+  // Request tracking for rate limiting
+  private requestCount: number = 0;
+  private lastResetTime: number = Date.now();
+  private readonly rateLimit: number;
 
   constructor(config: TradingEngineConfig) {
     this.apiUrl = config.jupiterApiUrl;
     this.defaultSlippageBps = config.defaultSlippageBps;
+    this.rateLimit = config.jupiterRateLimit;
+
+    // Create HTTP client with appropriate settings
+    const httpConfig: Partial<HttpClientConfig> = {
+      baseUrl: config.jupiterApiUrl,
+      timeoutMs: 15000, // 15 second timeout
+      retryConfig: {
+        maxAttempts: 3,
+        initialDelayMs: 500,
+        maxDelayMs: 5000,
+        backoffMultiplier: 2,
+        jitterFactor: 0.1,
+      },
+    };
+
+    this.httpClient = new HttpClient(httpConfig);
+  }
+
+  /**
+   * Check and update rate limit
+   */
+  private checkRateLimit(): void {
+    const now = Date.now();
+    const elapsed = now - this.lastResetTime;
+
+    // Reset counter every minute
+    if (elapsed >= 60000) {
+      this.requestCount = 0;
+      this.lastResetTime = now;
+    }
+
+    // Check if we're over the limit
+    if (this.requestCount >= this.rateLimit) {
+      const retryAfter = 60000 - elapsed;
+      throw new RateLimitError('Jupiter API', retryAfter);
+    }
+
+    this.requestCount++;
   }
 
   /**
@@ -57,29 +104,44 @@ export class JupiterQuote {
       url.searchParams.set('platformFeeBps', params.platformFeeBps.toString());
     }
 
+    // Restrict intermediate tokens for better quality routes
+    if (params.restrictIntermediateTokens !== false) {
+      url.searchParams.set('restrictIntermediateTokens', 'true');
+    }
+
     return url.toString();
   }
 
   /**
-   * Fetch a quote from Jupiter
+   * Fetch a quote from Jupiter with retry and timeout
    */
   async getQuote(params: QuoteParams): Promise<QuoteResponse> {
+    // Check rate limit before making request
+    this.checkRateLimit();
+
     const url = this.buildQuoteUrl(params);
     
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
+    try {
+      const data = await this.httpClient.get<QuoteResponse>(url);
+      
+      // Validate response
+      if (!data.inputMint || !data.outputMint || !data.inAmount || !data.outAmount) {
+        throw new NoRouteError(params.inputMint, params.outputMint, params.amount);
+      }
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Jupiter quote failed: ${response.status} - ${errorText}`);
+      return data;
+    } catch (error) {
+      // Convert generic errors to typed errors
+      if (error instanceof Error) {
+        if (error.message.includes('No routes found') || error.message.includes('404')) {
+          throw new NoRouteError(params.inputMint, params.outputMint, params.amount);
+        }
+        if (error.message.includes('429')) {
+          throw new RateLimitError('Jupiter API');
+        }
+      }
+      throw error;
     }
-
-    const data = await response.json() as QuoteResponse;
-    return data;
   }
 
   /**
