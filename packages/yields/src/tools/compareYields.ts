@@ -9,6 +9,25 @@ import { defiLlamaClient } from '../apis/defillama';
 import { calculateRiskScore } from '../utils/risk';
 import { CompareYieldsInput, YieldComparisonResult, YieldPool } from '../types';
 
+/**
+ * Tool definition for MCP registration
+ */
+export const compareYieldsDefinition = {
+  name: 'compareYields',
+  description: 'Compare multiple yield pools side-by-side with risk-adjusted recommendations.',
+  inputSchema: {
+    type: 'object' as const,
+    properties: {
+      poolIds: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Array of DeFiLlama pool IDs to compare (2-10 pools)',
+      },
+    },
+    required: ['poolIds'],
+  },
+};
+
 // Constraints
 const MAX_POOLS_TO_COMPARE = 10;
 const MIN_POOLS_TO_COMPARE = 2;

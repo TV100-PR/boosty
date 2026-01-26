@@ -9,6 +9,24 @@ import { defiLlamaClient } from '../apis/defillama';
 import { GetPoolDetailsInput, PoolDetailsResult } from '../types';
 
 /**
+ * Tool definition for MCP registration
+ */
+export const getPoolDetailsDefinition = {
+  name: 'getPoolDetails',
+  description: 'Get detailed information about a specific yield pool including APY breakdown, TVL, tokens, and audit status.',
+  inputSchema: {
+    type: 'object' as const,
+    properties: {
+      poolId: {
+        type: 'string',
+        description: 'The DeFiLlama pool identifier',
+      },
+    },
+    required: ['poolId'],
+  },
+};
+
+/**
  * Validate pool ID format
  */
 function validatePoolId(poolId: unknown): string {

@@ -12,20 +12,6 @@ import type {
 import { PUMPFUN_PROGRAM_IDS } from '../types.js';
 
 /**
- * Token create event data
- */
-interface TokenCreateEvent {
-  mint: string;
-  name: string;
-  symbol: string;
-  uri: string;
-  creator: string;
-  bondingCurve: string;
-  signature: string;
-  timestamp: number;
-}
-
-/**
  * PumpFun Monitor for new token launches
  */
 export class PumpFunMonitor {
@@ -83,7 +69,7 @@ export class PumpFunMonitor {
           // Look for token creation logs
           if (this.isCreateTokenLog(logs.logs)) {
             try {
-              const tokenInfo = await this.parseCreateTokenEvent(logs.signature, logs.logs);
+              const tokenInfo = await this.parseCreateTokenEvent(logs.signature);
               if (tokenInfo) {
                 this.notifyCallbacks(tokenInfo);
               }
@@ -119,8 +105,8 @@ export class PumpFunMonitor {
   /**
    * Check if log contains token creation
    */
-  private isCreateTokenLog(logs: string[]): boolean {
-    return logs.some(log => 
+  private isCreateTokenLog(logMessages: string[]): boolean {
+    return logMessages.some(log => 
       log.includes('Instruction: Create') ||
       log.includes('Program log: Instruction: Create')
     );
@@ -130,8 +116,7 @@ export class PumpFunMonitor {
    * Parse token creation event from transaction logs
    */
   private async parseCreateTokenEvent(
-    signature: string,
-    logs: string[]
+    signature: string
   ): Promise<NewPumpFunToken | null> {
     try {
       // Fetch the full transaction to get account data
@@ -160,7 +145,7 @@ export class PumpFunMonitor {
       }
 
       // Get creator from first account (fee payer)
-      if (accounts.length > 0) {
+      if (accounts.length > 0 && accounts[0]) {
         creator = accounts[0].pubkey.toBase58();
       }
 

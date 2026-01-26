@@ -38,17 +38,17 @@ export const promptDefinitions: PromptDefinition[] = [
 
 export function getPromptMessages(
   promptName: string,
-  args: Record<string, string>
+  args: Record<string, string | undefined>
 ): PromptMessage[] {
   switch (promptName) {
     case 'volume_campaign_wizard':
-      return getVolumeCampaignWizardMessages(args.tokenMint);
+      return getVolumeCampaignWizardMessages(args.tokenMint ?? '');
     case 'wallet_setup_guide':
-      return getWalletSetupGuideMessages(args.walletCount);
+      return getWalletSetupGuideMessages(args.walletCount ?? '10');
     case 'analyze_token_for_trading':
-      return getAnalyzeTokenMessages(args.tokenMint);
+      return getAnalyzeTokenMessages(args.tokenMint ?? '');
     case 'campaign_optimization_report':
-      return getCampaignOptimizationMessages(args.campaignId);
+      return getCampaignOptimizationMessages(args.campaignId ?? '');
     default:
       return [{ role: 'user', content: { type: 'text', text: 'Unknown prompt' } }];
   }

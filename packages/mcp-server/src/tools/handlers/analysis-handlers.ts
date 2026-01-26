@@ -8,8 +8,8 @@ import type {
   LiquidityAnalysis,
   TopHolder,
   ToolResult,
-} from '../types.js';
-import { logger } from '../utils/logger.js';
+} from '../../types.js';
+import { logger } from '../../utils/logger.js';
 
 export async function getTokenInfo(args: {
   mint: string;

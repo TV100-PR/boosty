@@ -13,6 +13,24 @@ import { calculateRiskScore } from '../utils/risk';
 import { GetRiskAssessmentInput, RiskAssessmentResult } from '../types';
 
 /**
+ * Tool definition for MCP registration
+ */
+export const getRiskAssessmentDefinition = {
+  name: 'getRiskAssessment',
+  description: 'Get comprehensive risk assessment for a yield pool including risk score, audit status, and warnings.',
+  inputSchema: {
+    type: 'object' as const,
+    properties: {
+      poolId: {
+        type: 'string',
+        description: 'The DeFiLlama pool identifier',
+      },
+    },
+    required: ['poolId'],
+  },
+};
+
+/**
  * Validate pool ID
  */
 function validatePoolId(poolId: unknown): string {

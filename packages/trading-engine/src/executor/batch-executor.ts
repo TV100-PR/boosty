@@ -8,9 +8,6 @@ import {
   Connection,
   Transaction,
   VersionedTransaction,
-  TransactionMessage,
-  AddressLookupTableAccount,
-  PublicKey,
 } from '@solana/web3.js';
 import { TradeExecutor } from './trade-executor.js';
 import type {

@@ -20,7 +20,6 @@ import type {
  */
 export class OrcaClient implements IOrcaClient {
   private readonly connection: Connection;
-  private readonly config: TradingEngineConfig;
   private readonly whirlpool: OrcaWhirlpool;
 
   // Pool cache
@@ -29,7 +28,6 @@ export class OrcaClient implements IOrcaClient {
   private readonly poolCacheTtlMs = 30_000; // 30 seconds
 
   constructor(config: TradingEngineConfig) {
-    this.config = config;
     this.connection = new Connection(config.rpcEndpoint, 'confirmed');
     this.whirlpool = new OrcaWhirlpool(config);
   }
@@ -61,7 +59,7 @@ export class OrcaClient implements IOrcaClient {
   /**
    * Execute a swap
    */
-  async swap(params: OrcaSwapParams): Promise<TransactionResult> {
+  async swap(_params: OrcaSwapParams): Promise<TransactionResult> {
     throw new Error('swap requires a signer. Use swapWithSigner instead.');
   }
 

@@ -75,11 +75,16 @@ export class LocalHSMAdapter implements IHSMAdapter {
  * AWS CloudHSM Adapter placeholder
  */
 export class AWSCloudHSMAdapter implements IHSMAdapter {
-  private _config: HSMConfig;
+  private readonly config: HSMConfig;
   private initialized = false;
 
   constructor(config: HSMConfig) {
-    this._config = config;
+    this.config = config;
+  }
+
+  /** Get the HSM configuration */
+  getConfig(): HSMConfig {
+    return this.config;
   }
 
   async initialize(): Promise<void> {
@@ -128,11 +133,16 @@ export class AWSCloudHSMAdapter implements IHSMAdapter {
  * Azure Key Vault Adapter placeholder
  */
 export class AzureKeyVaultAdapter implements IHSMAdapter {
-  private _config: HSMConfig;
+  private readonly config: HSMConfig;
   private initialized = false;
 
   constructor(config: HSMConfig) {
-    this._config = config;
+    this.config = config;
+  }
+
+  /** Get the HSM configuration */
+  getConfig(): HSMConfig {
+    return this.config;
   }
 
   async initialize(): Promise<void> {
@@ -180,11 +190,16 @@ export class AzureKeyVaultAdapter implements IHSMAdapter {
  * HashiCorp Vault Adapter placeholder
  */
 export class HashiCorpVaultAdapter implements IHSMAdapter {
-  private _config: HSMConfig;
+  private readonly config: HSMConfig;
   private initialized = false;
 
   constructor(config: HSMConfig) {
-    this._config = config;
+    this.config = config;
+  }
+
+  /** Get the HSM configuration */
+  getConfig(): HSMConfig {
+    return this.config;
   }
 
   async initialize(): Promise<void> {

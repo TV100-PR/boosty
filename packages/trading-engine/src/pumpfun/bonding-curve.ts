@@ -105,6 +105,11 @@ export class PumpFunBondingCurve {
     const tokenTotalSupply = data.readBigUInt64LE(BONDING_CURVE_LAYOUT.TOKEN_TOTAL_SUPPLY);
     const complete = data.readUInt8(BONDING_CURVE_LAYOUT.COMPLETE) === 1;
 
+    // Calculate migration progress (0-100)
+    // Migration threshold is typically 85 SOL
+    const MIGRATION_THRESHOLD = 85n * BigInt(1e9); // 85 SOL in lamports
+    const migrationProgress = complete ? 100 : Math.min(100, Number((realSolReserves * 100n) / MIGRATION_THRESHOLD));
+
     return {
       address,
       mint,
@@ -114,6 +119,7 @@ export class PumpFunBondingCurve {
       realTokenReserves,
       tokenTotalSupply,
       complete,
+      migrationProgress,
     };
   }
 

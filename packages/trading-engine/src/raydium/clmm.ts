@@ -95,8 +95,12 @@ export class RaydiumCLMM {
     const feeGrowthGlobal0X64 = data.readBigUInt64LE(CLMM_LAYOUT.FEE_GROWTH_GLOBAL_0_X64);
     const feeGrowthGlobal1X64 = data.readBigUInt64LE(CLMM_LAYOUT.FEE_GROWTH_GLOBAL_1_X64);
 
+    const baseDecimals = data.readUInt8(CLMM_LAYOUT.TOKEN_DECIMALS_0);
+    const quoteDecimals = data.readUInt8(CLMM_LAYOUT.TOKEN_DECIMALS_1);
+    const feeRate = this.getDefaultFeeRate(tickSpacing);
+
     // Calculate price from sqrtPriceX64
-    const price = this.sqrtPriceX64ToPrice(sqrtPriceX64, data.readUInt8(CLMM_LAYOUT.TOKEN_DECIMALS_0), data.readUInt8(CLMM_LAYOUT.TOKEN_DECIMALS_1));
+    const price = this.sqrtPriceX64ToPrice(sqrtPriceX64, baseDecimals, quoteDecimals);
 
     return {
       id: poolId,
@@ -108,9 +112,13 @@ export class RaydiumCLMM {
       lpMint: '', // CLMM doesn't have LP mint
       baseReserve: 0n, // Will be fetched
       quoteReserve: 0n, // Will be fetched
+      baseDecimals,
+      quoteDecimals,
       lpSupply: 0n,
       openTime: 0,
-      feeRate: this.getDefaultFeeRate(tickSpacing),
+      feeRate,
+      swapFeeNumerator: feeRate,
+      swapFeeDenominator: 10000,
       price,
       currentTick: tickCurrent,
       currentSqrtPrice: sqrtPriceX64,
@@ -129,16 +137,6 @@ export class RaydiumCLMM {
     const price = sqrtPrice * sqrtPrice;
     const decimalAdjustment = Math.pow(10, decimals0 - decimals1);
     return price * decimalAdjustment;
-  }
-
-  /**
-   * Convert price to sqrtPriceX64
-   */
-  private priceToSqrtPriceX64(price: number, decimals0: number, decimals1: number): bigint {
-    const decimalAdjustment = Math.pow(10, decimals1 - decimals0);
-    const adjustedPrice = price * decimalAdjustment;
-    const sqrtPrice = Math.sqrt(adjustedPrice);
-    return BigInt(Math.floor(sqrtPrice * Math.pow(2, 64)));
   }
 
   /**

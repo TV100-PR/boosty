@@ -60,11 +60,9 @@ export interface DCAAccountState {
  */
 export class JupiterDCA {
   private readonly connection: Connection;
-  private readonly apiUrl: string;
 
   constructor(config: TradingEngineConfig) {
     this.connection = new Connection(config.rpcEndpoint, 'confirmed');
-    this.apiUrl = config.jupiterApiUrl.replace('/v6', ''); // Base Jupiter API
   }
 
   /**

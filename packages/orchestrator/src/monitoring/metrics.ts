@@ -246,11 +246,15 @@ export class MetricsCollector implements MetricsCollectorInterface {
     if (botTrades.length > 1) {
       const intervals: number[] = [];
       for (let i = 1; i < botTrades.length; i++) {
-        intervals.push(
-          botTrades[i].timestamp.getTime() - botTrades[i - 1].timestamp.getTime()
-        );
+        const current = botTrades[i];
+        const previous = botTrades[i - 1];
+        if (current && previous) {
+          intervals.push(
+            current.timestamp.getTime() - previous.timestamp.getTime()
+          );
+        }
       }
-      avgTradeInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+      avgTradeInterval = intervals.length > 0 ? intervals.reduce((a, b) => a + b, 0) / intervals.length : 0;
     }
 
     return {
@@ -323,7 +327,10 @@ export class MetricsCollector implements MetricsCollectorInterface {
       const sortedTrades = [...campaignTrades].sort(
         (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
       );
-      metrics.startedAt = sortedTrades[0].timestamp;
+      const firstTrade = sortedTrades[0];
+      if (firstTrade) {
+        metrics.startedAt = firstTrade.timestamp;
+      }
     }
 
     return metrics;

@@ -22,13 +22,15 @@ import * as resourceHandlers from './resources/index.js';
 import { promptDefinitions, getPromptMessages } from './prompts/index.js';
 import { ApiKeyAuth, RateLimiter, AuditLogger, getToolCategory } from './auth/index.js';
 import { loadConfig, type ValidatedServerConfig } from './config/index.js';
-import { logger, createChildLogger } from './utils/logger.js';
+import { createChildLogger } from './utils/logger.js';
+import { X402PaymentMiddleware, createX402MiddlewareFromEnv } from './payments/index.js';
 
 const serverLogger = createChildLogger('server');
 
 export interface DeFiMCPServerOptions {
   config?: ValidatedServerConfig;
   configPath?: string;
+  enablePayments?: boolean;
 }
 
 export class DeFiMCPServer {
@@ -37,6 +39,7 @@ export class DeFiMCPServer {
   private auth: ApiKeyAuth;
   private rateLimiter: RateLimiter;
   private auditLogger: AuditLogger;
+  private paymentMiddleware: X402PaymentMiddleware | null = null;
   private isRunning: boolean = false;
 
   constructor(options: DeFiMCPServerOptions = {}) {
@@ -51,6 +54,15 @@ export class DeFiMCPServer {
     
     this.rateLimiter = new RateLimiter(this.config.auth.rateLimits);
     this.auditLogger = new AuditLogger();
+
+    // Initialize x402 payment middleware if enabled
+    if (options.enablePayments !== false) {
+      this.paymentMiddleware = createX402MiddlewareFromEnv();
+      if (this.paymentMiddleware) {
+        serverLogger.info('x402 payment middleware enabled');
+      }
+    }
+
 
     // Create MCP server
     this.server = new Server(
@@ -96,14 +108,49 @@ export class DeFiMCPServer {
         );
       }
 
+      // Check x402 payment if middleware is enabled
+      // Note: In MCP, payment headers would come from the client metadata
+      const paymentHeader = (request as any).meta?.headers?.['x-payment'];
+      
+      if (this.paymentMiddleware) {
+        const paymentResult = await this.paymentMiddleware.checkToolCall({
+          toolName: name,
+          arguments: args as Record<string, unknown>,
+          headers: { 'x-payment': paymentHeader },
+        });
+
+        if (!paymentResult.allowed) {
+          // Return 402 Payment Required response
+          if (paymentResult.paymentRequired) {
+            const paymentResponse = {
+              ...paymentResult.paymentRequired,
+              code: 402,
+              message: 'Payment Required',
+            };
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: JSON.stringify(paymentResponse, null, 2),
+                },
+              ],
+              isError: true,
+            };
+          }
+          throw new McpError(ErrorCode.InvalidRequest, paymentResult.error || 'Payment required');
+        }
+      }
+
       // Find and execute handler
       const handler = toolHandlers[name];
       if (!handler) {
         throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`);
       }
 
+      let success = false;
       try {
         const result = await handler(args);
+        success = true;
         const duration = Date.now() - startTime;
 
         // Audit log
@@ -113,6 +160,14 @@ export class DeFiMCPServer {
           result: 'success',
           duration,
         });
+
+        // Settle payment after successful execution
+        if (this.paymentMiddleware && paymentHeader) {
+          await this.paymentMiddleware.settleAfterExecution(
+            { toolName: name, arguments: args as Record<string, unknown>, headers: { 'x-payment': paymentHeader } },
+            success
+          );
+        }
 
         return {
           content: [
@@ -208,37 +263,37 @@ export class DeFiMCPServer {
 
     // Parse parameterized URIs
     const walletMatch = uri.match(/^wallets:\/\/([^/]+)$/);
-    if (walletMatch) {
+    if (walletMatch?.[1]) {
       const resource = await resourceHandlers.getWalletResource(walletMatch[1]);
       return { uri: resource.uri, mimeType: resource.mimeType, text: resource.content };
     }
 
     const walletTxMatch = uri.match(/^wallets:\/\/([^/]+)\/transactions$/);
-    if (walletTxMatch) {
+    if (walletTxMatch?.[1]) {
       const resource = await resourceHandlers.getWalletTransactionsResource(walletTxMatch[1]);
       return { uri: resource.uri, mimeType: resource.mimeType, text: resource.content };
     }
 
     const campaignMatch = uri.match(/^campaigns:\/\/([^/]+)$/);
-    if (campaignMatch) {
+    if (campaignMatch?.[1]) {
       const resource = await resourceHandlers.getCampaignResource(campaignMatch[1]);
       return { uri: resource.uri, mimeType: resource.mimeType, text: resource.content };
     }
 
     const campaignMetricsMatch = uri.match(/^campaigns:\/\/([^/]+)\/metrics$/);
-    if (campaignMetricsMatch) {
+    if (campaignMetricsMatch?.[1]) {
       const resource = await resourceHandlers.getCampaignMetricsResource(campaignMetricsMatch[1]);
       return { uri: resource.uri, mimeType: resource.mimeType, text: resource.content };
     }
 
     const botStatusMatch = uri.match(/^bots:\/\/([^/]+)\/status$/);
-    if (botStatusMatch) {
+    if (botStatusMatch?.[1]) {
       const resource = await resourceHandlers.getBotStatusResource(botStatusMatch[1]);
       return { uri: resource.uri, mimeType: resource.mimeType, text: resource.content };
     }
 
     const tokenInfoMatch = uri.match(/^tokens:\/\/([^/]+)\/info$/);
-    if (tokenInfoMatch) {
+    if (tokenInfoMatch?.[1]) {
       const resource = await resourceHandlers.getTokenInfoResource(tokenInfoMatch[1]);
       return { uri: resource.uri, mimeType: resource.mimeType, text: resource.content };
     }
@@ -293,6 +348,68 @@ export class DeFiMCPServer {
 
   getAuditLog(limit?: number) {
     return this.auditLogger.getEntries(limit);
+  }
+
+  /**
+   * Check if x402 payments are enabled
+   */
+  isPaymentsEnabled(): boolean {
+    return this.paymentMiddleware !== null;
+  }
+
+  /**
+   * Get the API key authentication instance
+   */
+  getAuth(): ApiKeyAuth {
+    return this.auth;
+  }
+
+  /**
+   * Get payment info for a specific tool
+   */
+  getToolPaymentInfo(toolName: string): { requiresPayment: boolean; price?: string; currency?: string } | null {
+    if (!this.paymentMiddleware) {
+      return { requiresPayment: false };
+    }
+    
+    const service = (this.paymentMiddleware as any).service;
+    if (!service) {
+      return { requiresPayment: false };
+    }
+
+    const requiresPayment = service.requiresPayment(toolName);
+    if (!requiresPayment) {
+      return { requiresPayment: false };
+    }
+
+    const requirements = service.getPaymentRequirements(toolName);
+    return {
+      requiresPayment: true,
+      price: requirements?.price || undefined,
+      currency: 'USDC',
+    };
+  }
+
+  /**
+   * Get pricing info for all tools
+   */
+  getAllToolPricing(): Record<string, { price: string; currency: string } | 'free'> {
+    if (!this.paymentMiddleware) {
+      return {};
+    }
+
+    const pricing: Record<string, { price: string; currency: string } | 'free'> = {};
+    
+    for (const tool of allToolDefinitions) {
+      const info = this.getToolPaymentInfo(tool.name);
+      if (info?.requiresPayment && info.price) {
+        pricing[tool.name] = { price: info.price, currency: info.currency || 'USDC' };
+      } else {
+        pricing[tool.name] = 'free';
+      }
+    }
+
+    return pricing;
   }
 }
 

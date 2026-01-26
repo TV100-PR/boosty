@@ -6,20 +6,17 @@
 import {
   Connection,
   PublicKey,
-  Transaction,
   VersionedTransaction,
   TransactionMessage,
   SystemProgram,
-  LAMPORTS_PER_SOL,
   ComputeBudgetProgram,
 } from '@solana/web3.js';
 import {
   createTransferInstruction,
   getAssociatedTokenAddress,
   createAssociatedTokenAccountInstruction,
-  TOKEN_PROGRAM_ID,
 } from '@solana/spl-token';
-import type { TransferResult, WalletErrorCode } from '../types.js';
+import type { WalletErrorCode } from '../types.js';
 import { WalletManagerError } from '../types.js';
 
 /**
@@ -131,7 +128,10 @@ export async function buildBatchTokenTransfers(
   const batchSize = 10; // Smaller batches for token transfers
 
   const batches = chunkArray(
-    transfers.map((t, i) => ({ ...t, ...destinationChecks[i] })),
+    transfers.map((t, i) => {
+      const check = destinationChecks[i]!;
+      return { ...t, destPubkey: check.destPubkey, destAta: check.destAta, exists: check.exists };
+    }),
     batchSize
   );
 
@@ -145,7 +145,7 @@ export async function buildBatchTokenTransfers(
       })
     );
 
-    for (const { destination, amount, destPubkey, destAta, exists } of batch) {
+    for (const { amount, destPubkey, destAta, exists } of batch) {
       // Create ATA if needed
       if (!exists) {
         instructions.push(
@@ -263,7 +263,10 @@ function distributeByWeights(totalAmount: bigint, weights: number[]): bigint[] {
   let remainder = totalAmount - distributed;
 
   for (let i = 0; remainder > BigInt(0) && i < amounts.length; i++) {
-    amounts[i] += BigInt(1);
+    const current = amounts[i];
+    if (current !== undefined) {
+      amounts[i] = current + BigInt(1);
+    }
     remainder -= BigInt(1);
   }
 

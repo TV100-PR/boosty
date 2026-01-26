@@ -337,7 +337,7 @@ export class PoolMonitor extends EventEmitter<PoolMonitorEvents> {
       pools[index] = poolInfo;
 
       // Check for significant changes
-      if (oldPool.liquidity !== poolInfo.liquidity) {
+      if (oldPool && oldPool.liquidity !== poolInfo.liquidity) {
         this.emit('liquidity-change', poolInfo, oldPool.liquidity, poolInfo.liquidity);
       }
     } else {

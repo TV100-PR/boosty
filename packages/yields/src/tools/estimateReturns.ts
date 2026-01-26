@@ -8,6 +8,32 @@
 import { defiLlamaClient } from '../apis/defillama';
 import { EstimateReturnsInput, EstimatedReturnsResult } from '../types';
 
+/**
+ * Tool definition for MCP registration
+ */
+export const estimateReturnsDefinition = {
+  name: 'estimateReturns',
+  description: 'Estimate potential returns for an investment in a yield pool based on current APY.',
+  inputSchema: {
+    type: 'object' as const,
+    properties: {
+      poolId: {
+        type: 'string',
+        description: 'The DeFiLlama pool identifier',
+      },
+      amount: {
+        type: 'number',
+        description: 'Investment amount in USD',
+      },
+      days: {
+        type: 'number',
+        description: 'Investment duration in days',
+      },
+    },
+    required: ['poolId', 'amount', 'days'],
+  },
+};
+
 // Validation constants
 const MAX_AMOUNT = 1_000_000_000_000; // $1 trillion max
 const MAX_DAYS = 3650; // 10 years max

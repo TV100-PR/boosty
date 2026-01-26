@@ -3,7 +3,7 @@
  * Database operations for wallet management
  */
 
-import { eq, and, inArray, gte, lte, sql, desc, arrayContains } from 'drizzle-orm';
+import { eq, and, gte, lte, sql, desc, arrayContains } from 'drizzle-orm';
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import type {
   WalletRepository as IWalletRepository,
@@ -86,14 +86,15 @@ export class WalletRepositoryImpl implements IWalletRepository {
 
     const result = await this.db.insert(wallets).values(newWallet).returning();
 
-    if (result.length === 0) {
+    const first = result[0];
+    if (!first) {
       throw new WalletManagerError(
         'DATABASE_ERROR' as WalletErrorCode,
         'Failed to create wallet'
       );
     }
 
-    return this.toDomainWallet(result[0]);
+    return this.toDomainWallet(first);
   }
 
   /**
@@ -106,7 +107,8 @@ export class WalletRepositoryImpl implements IWalletRepository {
       .where(eq(wallets.id, walletId))
       .limit(1);
 
-    return result.length > 0 ? this.toDomainWallet(result[0]) : null;
+    const first = result[0];
+    return first ? this.toDomainWallet(first) : null;
   }
 
   /**
@@ -119,7 +121,8 @@ export class WalletRepositoryImpl implements IWalletRepository {
       .where(eq(wallets.address, address))
       .limit(1);
 
-    return result.length > 0 ? this.toDomainWallet(result[0]) : null;
+    const first = result[0];
+    return first ? this.toDomainWallet(first) : null;
   }
 
   /**
@@ -155,7 +158,7 @@ export class WalletRepositoryImpl implements IWalletRepository {
     }
 
     if (conditions.length > 0) {
-      query = query.where(and(...conditions));
+      query = query.where(and(...conditions)) as any;
     }
 
     query = query.orderBy(desc(wallets.createdAt));
@@ -208,14 +211,15 @@ export class WalletRepositoryImpl implements IWalletRepository {
       .where(eq(wallets.id, walletId))
       .returning();
 
-    if (result.length === 0) {
+    const first = result[0];
+    if (!first) {
       throw new WalletManagerError(
         'WALLET_NOT_FOUND' as WalletErrorCode,
         'Wallet not found'
       );
     }
 
-    return this.toDomainWallet(result[0]);
+    return this.toDomainWallet(first);
   }
 
   /**
@@ -284,7 +288,7 @@ export class WalletRepositoryImpl implements IWalletRepository {
       .from(wallets);
 
     if (conditions.length > 0) {
-      query = query.where(and(...conditions));
+      query = query.where(and(...conditions)) as any;
     }
 
     const result = await query;
@@ -312,14 +316,15 @@ export class WalletRepositoryImpl implements IWalletRepository {
       .values(newMasterWallet)
       .returning();
 
-    if (result.length === 0) {
+    const first = result[0];
+    if (!first) {
       throw new WalletManagerError(
         'DATABASE_ERROR' as WalletErrorCode,
         'Failed to create master wallet'
       );
     }
 
-    return this.toDomainMasterWallet(result[0]);
+    return this.toDomainMasterWallet(first);
   }
 
   /**
@@ -332,7 +337,8 @@ export class WalletRepositoryImpl implements IWalletRepository {
       .where(eq(masterWallets.id, id))
       .limit(1);
 
-    return result.length > 0 ? this.toDomainMasterWallet(result[0]) : null;
+    const first = result[0];
+    return first ? this.toDomainMasterWallet(first) : null;
   }
 
   /**

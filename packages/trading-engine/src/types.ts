@@ -5,7 +5,7 @@
  * Jupiter, Raydium, Orca, PumpFun, and the trade execution engine.
  */
 
-import type { PublicKey, VersionedTransaction, TransactionSignature } from '@solana/web3.js';
+import type { VersionedTransaction, TransactionSignature } from '@solana/web3.js';
 
 // ============================================================================
 // Common Types
@@ -289,12 +289,20 @@ export interface RaydiumPoolInfo {
   baseReserve: bigint;
   /** Quote token reserve */
   quoteReserve: bigint;
+  /** Base token decimals */
+  baseDecimals: number;
+  /** Quote token decimals */
+  quoteDecimals: number;
   /** LP supply */
   lpSupply: bigint;
   /** Pool open time */
   openTime: number;
   /** Fee rate (basis points) */
   feeRate: number;
+  /** Swap fee numerator */
+  swapFeeNumerator: number;
+  /** Swap fee denominator */
+  swapFeeDenominator: number;
   /** Current price (base/quote) */
   price: number;
   /** 24h volume in USD */
@@ -322,6 +330,8 @@ export interface RaydiumCLMMPoolInfo extends RaydiumPoolInfo {
   feeGrowthGlobalB: bigint;
   /** Liquidity */
   liquidity: bigint;
+  /** Total value locked in USD */
+  tvl?: number;
 }
 
 /**
@@ -417,6 +427,10 @@ export interface WhirlpoolInfo {
   feeGrowthGlobalB: bigint;
   /** Reward infos */
   rewardInfos: WhirlpoolRewardInfo[];
+  /** Total value locked in USD */
+  tvl?: number;
+  /** 24h volume in USD */
+  volume24h?: number;
 }
 
 /**
@@ -536,6 +550,8 @@ export interface BondingCurveState {
   tokenTotalSupply: bigint;
   /** Is complete (migrated) */
   complete: boolean;
+  /** Migration progress (0-100) */
+  migrationProgress: number;
 }
 
 /**

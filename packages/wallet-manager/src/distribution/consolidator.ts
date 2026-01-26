@@ -6,26 +6,17 @@
 import {
   Connection,
   PublicKey,
-  Transaction,
   VersionedTransaction,
   TransactionMessage,
   SystemProgram,
-  LAMPORTS_PER_SOL,
   ComputeBudgetProgram,
 } from '@solana/web3.js';
 import {
   createTransferInstruction,
   createCloseAccountInstruction,
   getAssociatedTokenAddress,
-  TOKEN_PROGRAM_ID,
 } from '@solana/spl-token';
-import type {
-  TransactionResult,
-  TransferResult,
-  WalletErrorCode,
-} from '../types.js';
-import { WalletManagerError } from '../types.js';
-import { getWalletBalance, getAllTokenBalances } from '../operations/balance.js';
+import { getAllTokenBalances } from '../operations/balance.js';
 
 /**
  * Minimum SOL to keep for rent

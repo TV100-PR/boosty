@@ -82,3 +82,51 @@ export function nowMs(): number {
 export function msSince(startMs: number): number {
   return Date.now() - startMs;
 }
+// ============================================================================
+// Rent Calculation Utilities
+// ============================================================================
+
+/**
+ * Account size constants in bytes
+ */
+export const ACCOUNT_SIZES = {
+  /** Standard SPL Token account */
+  TOKEN_ACCOUNT: 165,
+  /** Token-2022 base account (without extensions) */
+  TOKEN_2022_ACCOUNT: 165,
+  /** Mint account */
+  MINT_ACCOUNT: 82,
+  /** Multisig account */
+  MULTISIG_ACCOUNT: 355,
+  /** Metadata account (approximate) */
+  METADATA_ACCOUNT: 679,
+  /** Master Edition account */
+  MASTER_EDITION_ACCOUNT: 282,
+} as const;
+
+/**
+ * Get estimated rent exemption for common account types
+ * Note: Use connection.getMinimumBalanceForRentExemption for precise values
+ * These are estimates based on typical rent rates
+ */
+export function estimateRentExemption(dataSize: number): number {
+  // Rent is approximately 0.00089088 SOL per byte per epoch (2 days)
+  // Rent exemption requires ~2 years worth of rent
+  const LAMPORTS_PER_BYTE_YEAR = 6960;
+  const EXEMPTION_YEARS = 2;
+  return dataSize * LAMPORTS_PER_BYTE_YEAR * EXEMPTION_YEARS;
+}
+
+/**
+ * Get rent exemption for a token account
+ */
+export function estimateTokenAccountRent(): number {
+  return estimateRentExemption(ACCOUNT_SIZES.TOKEN_ACCOUNT);
+}
+
+/**
+ * Get rent exemption for a mint account
+ */
+export function estimateMintRent(): number {
+  return estimateRentExemption(ACCOUNT_SIZES.MINT_ACCOUNT);
+}

@@ -3,7 +3,7 @@
  * Real-time swap quotes and route finding via Jupiter API
  */
 
-import { PublicKey, VersionedTransaction, Connection } from '@solana/web3.js';
+import { PublicKey, VersionedTransaction } from '@solana/web3.js';
 import { logger } from '../utils/logger.js';
 
 const JUPITER_API_URL = 'https://quote-api.jup.ag/v6';

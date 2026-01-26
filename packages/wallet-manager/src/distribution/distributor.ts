@@ -5,8 +5,6 @@
 
 import {
   Connection,
-  PublicKey,
-  LAMPORTS_PER_SOL,
 } from '@solana/web3.js';
 import type {
   FundDistributor as IFundDistributor,
@@ -104,10 +102,10 @@ export class FundDistributorImpl implements IFundDistributor {
       });
     }
 
-    // Build transfers array
+    // Build transfers array with guaranteed amounts
     const transfers = destinations.map((dest, i) => ({
       destination: dest.address,
-      amount: amounts[i],
+      amount: amounts[i] ?? BigInt(0),
       walletId: dest.id,
     }));
 
@@ -229,7 +227,7 @@ export class FundDistributorImpl implements IFundDistributor {
     // Build transfers array
     const transfers = destinations.map((dest, i) => ({
       destination: dest.address,
-      amount: amounts[i],
+      amount: amounts[i] ?? BigInt(0),
       walletId: dest.id,
     }));
 
@@ -315,8 +313,8 @@ export class FundDistributorImpl implements IFundDistributor {
    * Consolidate SOL from multiple wallets to a single destination
    */
   async consolidateSol(
-    walletIds: string[],
-    destinationWallet: string
+    _walletIds: string[],
+    _destinationWallet: string
   ): Promise<TransactionResult> {
     // This is a more complex operation that requires signing from multiple wallets
     // For now, we'll implement a simplified version that processes one at a time
@@ -330,9 +328,9 @@ export class FundDistributorImpl implements IFundDistributor {
    * Consolidate tokens from multiple wallets to a single destination
    */
   async consolidateToken(
-    walletIds: string[],
-    tokenMint: string,
-    destinationWallet: string
+    _walletIds: string[],
+    _tokenMint: string,
+    _destinationWallet: string
   ): Promise<TransactionResult> {
     throw new WalletManagerError(
       'CONSOLIDATION_FAILED' as WalletErrorCode,

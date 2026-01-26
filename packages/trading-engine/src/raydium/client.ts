@@ -12,6 +12,7 @@ import type {
   RaydiumPoolInfo,
   RaydiumCLMMPoolInfo,
   RaydiumSwapParams,
+  RaydiumPoolType,
   AddLiquidityParams,
   RemoveLiquidityParams,
   TransactionResult,
@@ -24,7 +25,6 @@ import type {
  */
 export class RaydiumClient implements IRaydiumClient {
   private readonly connection: Connection;
-  private readonly config: TradingEngineConfig;
   private readonly amm: RaydiumAMM;
   private readonly clmm: RaydiumCLMM;
   private readonly liquidity: RaydiumLiquidity;
@@ -35,7 +35,6 @@ export class RaydiumClient implements IRaydiumClient {
   private readonly poolCacheTtlMs = 30_000; // 30 seconds
 
   constructor(config: TradingEngineConfig) {
-    this.config = config;
     this.connection = new Connection(config.rpcEndpoint, 'confirmed');
     this.amm = new RaydiumAMM(config);
     this.clmm = new RaydiumCLMM(config);
@@ -104,7 +103,7 @@ export class RaydiumClient implements IRaydiumClient {
   /**
    * Execute a swap (auto-detects pool type)
    */
-  async swap(params: RaydiumSwapParams): Promise<TransactionResult> {
+  async swap(_params: RaydiumSwapParams): Promise<TransactionResult> {
     throw new Error('swap requires a signer. Use swapWithSigner instead.');
   }
 
@@ -164,7 +163,7 @@ export class RaydiumClient implements IRaydiumClient {
   /**
    * Add liquidity to a pool
    */
-  async addLiquidity(params: AddLiquidityParams): Promise<TransactionResult> {
+  async addLiquidity(_params: AddLiquidityParams): Promise<TransactionResult> {
     throw new Error('addLiquidity requires a signer. Use addLiquidityWithSigner instead.');
   }
 
@@ -181,7 +180,7 @@ export class RaydiumClient implements IRaydiumClient {
   /**
    * Remove liquidity from a pool
    */
-  async removeLiquidity(params: RemoveLiquidityParams): Promise<TransactionResult> {
+  async removeLiquidity(_params: RemoveLiquidityParams): Promise<TransactionResult> {
     throw new Error('removeLiquidity requires a signer. Use removeLiquidityWithSigner instead.');
   }
 
@@ -270,7 +269,7 @@ export class RaydiumClient implements IRaydiumClient {
     amount: bigint
   ): Promise<{
     poolId: string;
-    poolType: 'AMM_V4' | 'CLMM';
+    poolType: RaydiumPoolType;
     expectedOutput: bigint;
     priceImpact: number;
   } | null> {

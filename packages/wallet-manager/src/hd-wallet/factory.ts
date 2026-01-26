@@ -269,4 +269,4 @@ export class HDWalletFactoryImpl implements IHDWalletFactory {
 /**
  * Export a singleton instance
  */
-export const HDWalletFactory = new HDWalletFactoryImpl();
+export const hdWalletFactory = new HDWalletFactoryImpl();

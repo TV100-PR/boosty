@@ -23,6 +23,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@solana/web3.js": "^1.95.0",
     "zod": "^3.22.0"
   },
   "devDependencies": {

@@ -328,9 +328,13 @@ export class RandomizationEngine implements RandomizationEngineInterface {
         let random = Math.random() * totalWeight;
 
         for (let j = 0; j < remaining.length; j++) {
-          random -= remainingWeights[j];
+          const weight = remainingWeights[j];
+          const item = remaining[j];
+          if (weight === undefined || item === undefined) continue;
+          
+          random -= weight;
           if (random <= 0) {
-            result.push(remaining[j]);
+            result.push(item);
             remaining.splice(j, 1);
             remainingWeights.splice(j, 1);
             break;

@@ -9,6 +9,40 @@ import { defiLlamaClient } from '../apis/defillama';
 import { getSimpleRiskScore, meetsMinimumSafetyStandards } from '../utils/risk';
 import { GetLPYieldsInput, LPYieldResult, YieldPool } from '../types';
 
+/**
+ * Tool definition for MCP registration
+ */
+export const getLPYieldsDefinition = {
+  name: 'getLPYields',
+  description: 'Find LP pool yields for a specific token pair across all protocols and chains.',
+  inputSchema: {
+    type: 'object' as const,
+    properties: {
+      token0: {
+        type: 'string',
+        description: 'First token symbol (e.g., ETH, USDC)',
+      },
+      token1: {
+        type: 'string',
+        description: 'Second token symbol (e.g., USDT, WBTC)',
+      },
+      chain: {
+        type: 'string',
+        description: 'Filter by blockchain',
+      },
+      minTvl: {
+        type: 'number',
+        description: 'Minimum TVL in USD',
+      },
+      limit: {
+        type: 'number',
+        description: 'Maximum results (default: 20)',
+      },
+    },
+    required: ['token0', 'token1'],
+  },
+};
+
 // Protocol fee defaults (based on common protocol configurations)
 const PROTOCOL_FEES: Record<string, number> = {
   'uniswap-v3': 0.3,      // Variable, but 0.3% is common

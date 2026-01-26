@@ -25,6 +25,6 @@ export {
 } from './derivation.js';
 
 export {
-  HDWalletFactory,
+  hdWalletFactory,
   HDWalletFactoryImpl,
 } from './factory.js';

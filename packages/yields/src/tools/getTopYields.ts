@@ -15,6 +15,44 @@ const DEFAULT_LIMIT = 20;
 const MIN_TVL_DEFAULT = 10000; // $10K minimum by default for safety
 
 /**
+ * Tool definition for MCP registration
+ */
+export const getTopYieldsDefinition = {
+  name: 'getTopYields',
+  description: 'Get top DeFi yields with filtering by chain, APY, TVL, and risk score. Returns highest-yielding pools with risk assessment.',
+  inputSchema: {
+    type: 'object' as const,
+    properties: {
+      chain: {
+        type: 'string',
+        description: 'Filter by blockchain (ethereum, arbitrum, solana, etc.)',
+      },
+      minTvl: {
+        type: 'number',
+        description: 'Minimum TVL in USD (default: 10000)',
+      },
+      minApy: {
+        type: 'number',
+        description: 'Minimum APY percentage',
+      },
+      maxRisk: {
+        type: 'number',
+        description: 'Maximum risk score 1-10 (default: 10)',
+      },
+      limit: {
+        type: 'number',
+        description: 'Number of results (max: 100, default: 20)',
+      },
+      stablecoinOnly: {
+        type: 'boolean',
+        description: 'Only return stablecoin pools',
+      },
+    },
+    required: [],
+  },
+};
+
+/**
  * Validate and sanitize input parameters
  */
 function validateInput(input: GetTopYieldsInput): Required<GetTopYieldsInput> {

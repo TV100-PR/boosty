@@ -96,7 +96,7 @@ export class CampaignManager extends EventEmitter<CampaignManagerEvents> impleme
 
     const bots = await this.config.botCoordinator.createBotSwarm(
       config.botCount,
-      { ...baseBotConfig, walletId: walletIds[0] }
+      { ...baseBotConfig, walletId: walletIds[0] ?? `${campaign.id}-wallet-0` }
     );
 
     // Register bots with campaign
@@ -383,7 +383,7 @@ export class CampaignManager extends EventEmitter<CampaignManagerEvents> impleme
     );
 
     const baseBotConfig: BotConfig = {
-      walletId: newWalletIds[0],
+      walletId: newWalletIds[0] ?? `${campaignId}-wallet-0`,
       targetToken: campaign.config.targetToken,
       mode: 'volume',
       minTradeSize: campaign.config.walletFundingAmount / 100n,

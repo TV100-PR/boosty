@@ -86,12 +86,17 @@ export class BotFactory {
 
     // Get behavior profiles for the swarm
     const profiles = selectProfilesForSwarm(count, mode);
+    const defaultProfile = profiles[0];
+    
+    if (!defaultProfile) {
+      throw new Error('No behavior profiles available for swarm creation');
+    }
 
     // Create bots
     const bots: TradingBot[] = [];
 
     for (let i = 0; i < count; i++) {
-      const profile = profiles[i];
+      const profile = profiles[i] ?? defaultProfile;
       const walletId = walletIds?.[i] ?? `${baseConfig.walletId}-${i}`;
 
       // Create varied configuration

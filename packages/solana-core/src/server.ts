@@ -18,6 +18,8 @@ import {
   createConnectionManager,
   createPythOracle,
   createSwitchboardOracle,
+  createJupiterClient,
+  createPoolMonitor,
   getTokenAccount,
   getTokenMint,
   getTokenAccountsByOwner,
@@ -27,6 +29,10 @@ import {
   isValidPublicKey,
   PythOracle,
   SwitchboardOracle,
+  JupiterClient,
+  PoolMonitor,
+  TOKEN_MINTS,
+  DEX_PROGRAMS,
 } from './index.js';
 import { logger } from './utils/logger.js';
 
@@ -203,6 +209,140 @@ const TOOLS: Tool[] = [
       },
     },
   },
+  {
+    name: 'getSwapQuote',
+    description: 'Get a swap quote from Jupiter aggregator for trading tokens',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        inputToken: {
+          type: 'string',
+          description: 'Input token symbol (SOL, USDC, BONK, etc.) or mint address',
+        },
+        outputToken: {
+          type: 'string',
+          description: 'Output token symbol (SOL, USDC, BONK, etc.) or mint address',
+        },
+        amount: {
+          type: 'number',
+          description: 'Amount of input token to swap (in token units, not raw)',
+        },
+        slippageBps: {
+          type: 'number',
+          description: 'Slippage tolerance in basis points (100 = 1%)',
+          default: 50,
+        },
+      },
+      required: ['inputToken', 'outputToken', 'amount'],
+    },
+  },
+  {
+    name: 'getJupiterPrice',
+    description: 'Get token price from Jupiter price API',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        tokenMint: {
+          type: 'string',
+          description: 'Token mint address or symbol (SOL, USDC, etc.)',
+        },
+        vsToken: {
+          type: 'string',
+          description: 'Quote token (default: USDC)',
+          default: 'USDC',
+        },
+      },
+      required: ['tokenMint'],
+    },
+  },
+  {
+    name: 'getSupportedTokens',
+    description: 'Get list of well-known token mints supported by the system',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'getAccountRent',
+    description: 'Calculate rent exemption amount for an account of given size',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        dataSize: {
+          type: 'number',
+          description: 'Size of the account data in bytes',
+        },
+      },
+      required: ['dataSize'],
+    },
+  },
+  {
+    name: 'getTokenAccountRent',
+    description: 'Get rent exemption amount for a token account',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        isToken2022: {
+          type: 'boolean',
+          description: 'Whether this is a Token-2022 account (larger size)',
+          default: false,
+        },
+      },
+    },
+  },
+  {
+    name: 'getPoolState',
+    description: 'Get real-time pool state from DEX (Raydium, Orca, or Meteora)',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        poolAddress: {
+          type: 'string',
+          description: 'Pool/AMM address',
+        },
+        dex: {
+          type: 'string',
+          enum: ['raydium', 'orca', 'meteora', 'auto'],
+          description: 'DEX type (auto will attempt detection)',
+          default: 'auto',
+        },
+      },
+      required: ['poolAddress'],
+    },
+  },
+  {
+    name: 'getPoolPrice',
+    description: 'Calculate token price from pool reserves',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        poolAddress: {
+          type: 'string',
+          description: 'Pool/AMM address',
+        },
+        decimalsA: {
+          type: 'number',
+          description: 'Decimals for token A (default: 9)',
+          default: 9,
+        },
+        decimalsB: {
+          type: 'number',
+          description: 'Decimals for token B (default: 6 for USDC)',
+          default: 6,
+        },
+      },
+      required: ['poolAddress'],
+    },
+  },
+  {
+    name: 'getSupportedDexes',
+    description: 'Get list of supported DEX program IDs',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
 ];
 
 // ============================================================================
@@ -214,6 +354,8 @@ export class SolanaMCPServer {
   private connectionManager: ConnectionManager;
   private pythOracle: PythOracle;
   private switchboardOracle: SwitchboardOracle;
+  private jupiterClient: JupiterClient;
+  private poolMonitor: PoolMonitor;
 
   constructor() {
     this.server = new Server(
@@ -235,6 +377,12 @@ export class SolanaMCPServer {
     const connection = this.connectionManager.getConnection();
     this.pythOracle = createPythOracle(connection);
     this.switchboardOracle = createSwitchboardOracle(connection);
+    
+    // Initialize Jupiter client
+    this.jupiterClient = createJupiterClient();
+    
+    // Initialize pool monitor
+    this.poolMonitor = createPoolMonitor(connection);
 
     this.setupHandlers();
     this.setupErrorHandling();
@@ -535,6 +683,175 @@ export class SolanaMCPServer {
         return { feeds };
       }
 
+      case 'getSwapQuote': {
+        const inputToken = args.inputToken as string;
+        const outputToken = args.outputToken as string;
+        const amount = args.amount as number;
+        const slippageBps = (args.slippageBps as number) || 50;
+
+        const quote = await this.jupiterClient.getSimpleQuote({
+          inputToken,
+          outputToken,
+          amount,
+          slippageBps,
+        });
+
+        return {
+          inputToken,
+          outputToken,
+          inputAmount: quote.inputAmount,
+          outputAmount: quote.outputAmount,
+          priceImpactPct: quote.priceImpactPct,
+          route: quote.route,
+          minimumReceived: quote.minimumReceived,
+          slippageBps,
+        };
+      }
+
+      case 'getJupiterPrice': {
+        const tokenMint = args.tokenMint as string;
+        const vsToken = (args.vsToken as string) || 'USDC';
+        
+        // Resolve symbol to mint if needed
+        const resolvedMint = TOKEN_MINTS[tokenMint as keyof typeof TOKEN_MINTS] || tokenMint;
+        const resolvedVs = TOKEN_MINTS[vsToken as keyof typeof TOKEN_MINTS] || vsToken;
+        
+        const price = await this.jupiterClient.getPrice(resolvedMint, resolvedVs);
+        
+        if (!price) {
+          throw new Error(`Price not available for ${tokenMint}`);
+        }
+
+        return {
+          token: tokenMint,
+          mint: resolvedMint,
+          vsToken,
+          price: price.price,
+          confidence: price.confidence,
+        };
+      }
+
+      case 'getSupportedTokens': {
+        return {
+          tokens: Object.entries(TOKEN_MINTS).map(([symbol, mint]) => ({
+            symbol,
+            mint,
+          })),
+        };
+      }
+
+      case 'getAccountRent': {
+        const dataSize = args.dataSize as number;
+        const connection = this.connectionManager.getConnection();
+        const rentExempt = await connection.getMinimumBalanceForRentExemption(dataSize);
+        
+        return {
+          dataSize,
+          rentExemptionLamports: rentExempt,
+          rentExemptionSol: lamportsToSol(rentExempt),
+        };
+      }
+
+      case 'getTokenAccountRent': {
+        const isToken2022 = args.isToken2022 as boolean;
+        const connection = this.connectionManager.getConnection();
+        
+        // SPL Token account: 165 bytes, Token-2022 base: 165 + extensions
+        const accountSize = isToken2022 ? 182 : 165;
+        const rentExempt = await connection.getMinimumBalanceForRentExemption(accountSize);
+        
+        return {
+          accountType: isToken2022 ? 'Token-2022' : 'SPL Token',
+          accountSize,
+          rentExemptionLamports: rentExempt,
+          rentExemptionSol: lamportsToSol(rentExempt),
+        };
+      }
+
+      case 'getPoolState': {
+        const poolAddress = args.poolAddress as string;
+        const dex = (args.dex as string) || 'auto';
+        
+        if (!isValidPublicKey(poolAddress)) {
+          throw new Error('Invalid pool address');
+        }
+        
+        const pubkey = new PublicKey(poolAddress);
+        let pool;
+        
+        switch (dex) {
+          case 'raydium':
+            pool = await this.poolMonitor.getRaydiumPool(pubkey);
+            break;
+          case 'orca':
+            pool = await this.poolMonitor.getOrcaWhirlpool(pubkey);
+            break;
+          case 'meteora':
+            pool = await this.poolMonitor.getMeteoraPool(pubkey);
+            break;
+          default:
+            pool = await this.poolMonitor.getPool(pubkey);
+        }
+        
+        if (!pool) {
+          throw new Error(`Failed to fetch pool state for ${poolAddress}`);
+        }
+
+        return {
+          address: pool.address.toBase58(),
+          dex: pool.dex,
+          tokenMintA: pool.tokenMintA.toBase58(),
+          tokenMintB: pool.tokenMintB.toBase58(),
+          tokenVaultA: pool.tokenVaultA.toBase58(),
+          tokenVaultB: pool.tokenVaultB.toBase58(),
+          reserveA: pool.reserveA.toString(),
+          reserveB: pool.reserveB.toString(),
+          fee: pool.fee,
+          lastUpdated: pool.lastUpdated.toISOString(),
+        };
+      }
+
+      case 'getPoolPrice': {
+        const poolAddress = args.poolAddress as string;
+        const decimalsA = (args.decimalsA as number) || 9;
+        const decimalsB = (args.decimalsB as number) || 6;
+        
+        if (!isValidPublicKey(poolAddress)) {
+          throw new Error('Invalid pool address');
+        }
+        
+        const pubkey = new PublicKey(poolAddress);
+        const pool = await this.poolMonitor.getPool(pubkey);
+        
+        if (!pool) {
+          throw new Error(`Failed to fetch pool for ${poolAddress}`);
+        }
+        
+        const price = this.poolMonitor.calculatePrice(pool, decimalsA, decimalsB);
+        
+        return {
+          poolAddress,
+          dex: pool.dex,
+          tokenMintA: pool.tokenMintA.toBase58(),
+          tokenMintB: pool.tokenMintB.toBase58(),
+          price,
+          priceInverted: price > 0 ? 1 / price : 0,
+          reserveA: pool.reserveA.toString(),
+          reserveB: pool.reserveB.toString(),
+          decimalsA,
+          decimalsB,
+        };
+      }
+
+      case 'getSupportedDexes': {
+        return {
+          dexes: Object.entries(DEX_PROGRAMS).map(([name, programId]) => ({
+            name,
+            programId: programId.toBase58(),
+          })),
+        };
+      }
+
       default:
         throw new Error(`Unknown tool: ${name}`);
     }
@@ -549,6 +866,7 @@ export class SolanaMCPServer {
   async close(): Promise<void> {
     this.pythOracle.unsubscribeAll();
     this.switchboardOracle.unsubscribeAll();
+    await this.poolMonitor.unsubscribeAll();
     await this.connectionManager.close();
     await this.server.close();
     logger.info('Solana MCP Server closed');

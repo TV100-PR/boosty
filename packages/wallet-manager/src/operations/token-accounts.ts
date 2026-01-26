@@ -7,12 +7,10 @@ import {
   Connection,
   PublicKey,
   Transaction,
-  SystemProgram,
   LAMPORTS_PER_SOL,
 } from '@solana/web3.js';
 import {
   TOKEN_PROGRAM_ID,
-  ASSOCIATED_TOKEN_PROGRAM_ID,
   AccountLayout,
   getAssociatedTokenAddress,
   createAssociatedTokenAccountInstruction,
@@ -20,7 +18,6 @@ import {
 } from '@solana/spl-token';
 import type {
   TokenAccount,
-  TransactionResult,
   WalletErrorCode,
 } from '../types.js';
 import { WalletManagerError } from '../types.js';

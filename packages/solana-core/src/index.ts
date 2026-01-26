@@ -85,6 +85,32 @@ export {
   createSwitchboardOracle,
 } from './oracles/index.js';
 
+// DEX Integration (Jupiter)
+export {
+  JupiterClient,
+  createJupiterClient,
+  TOKEN_MINTS,
+  type SwapQuote,
+  type RoutePlan,
+  type TokenPrice,
+  type SwapParams,
+} from './dex/index.js';
+
+// DEX Pool Monitoring (Raydium, Orca, Meteora)
+export {
+  PoolMonitor,
+  createPoolMonitor,
+  DEX_PROGRAMS,
+  decodeRaydiumAmmPool,
+  decodeOrcaWhirlpool,
+  decodeMeteoraPool,
+  type BasePoolState,
+  type RaydiumAmmPool,
+  type OrcaWhirlpool,
+  type MeteoraPool,
+  type PoolState,
+} from './dex/index.js';
+
 // Utilities
 export {
   logger,
@@ -105,6 +131,10 @@ export {
   retryWithBackoff,
   nowMs,
   msSince,
+  ACCOUNT_SIZES,
+  estimateRentExemption,
+  estimateTokenAccountRent,
+  estimateMintRent,
 } from './utils/helpers.js';
 
 // Re-export commonly used Solana types

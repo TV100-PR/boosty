@@ -16,7 +16,7 @@ export {
 } from './encryption.js';
 
 export {
-  KeyVault,
+  keyVault,
   KeyVaultImpl,
 } from './key-vault.js';
 

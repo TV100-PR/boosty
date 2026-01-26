@@ -107,7 +107,7 @@ export {
   createDerivedWallet,
   
   // Factory
-  HDWalletFactory,
+  hdWalletFactory,
   HDWalletFactoryImpl,
 } from './hd-wallet/index.js';
 
@@ -128,7 +128,7 @@ export {
   clearSensitiveData,
   
   // Key Vault
-  KeyVault,
+  keyVault,
   KeyVaultImpl,
   
   // HSM Adapters

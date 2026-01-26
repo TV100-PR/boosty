@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "description": "Boosty MCP servers for DeFi - Volume generation, trading, and wallet management",
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "build": "pnpm -r build",
     "test": "pnpm -r test",
@@ -20,13 +22,13 @@
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
-    "typescript": "^5.3.0",
-    "vitest": "^1.0.0",
-    "tsup": "^8.0.0",
-    "eslint": "^8.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "prettier": "^3.0.0"
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.9.3",
+    "vitest": "^1.0.0"
   },
   "engines": {
     "node": ">=20.0.0",

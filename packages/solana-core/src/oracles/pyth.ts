@@ -111,7 +111,9 @@ export class PythOracle {
         symbol: symbol || feedAddress.toBase58().slice(0, 8),
         price: price.price,
         confidence: price.confidence || 0,
-        publishTime: new Date(Number(price.publishTime) * 1000),
+        publishTime: (price as { publishTime?: number | bigint }).publishTime 
+          ? new Date(Number((price as { publishTime?: number | bigint }).publishTime) * 1000) 
+          : new Date(),
         source: 'pyth',
         feedAddress,
         status,
@@ -169,7 +171,9 @@ export class PythOracle {
             symbol,
             price: price.price,
             confidence: price.confidence || 0,
-            publishTime: new Date(Number(price.publishTime) * 1000),
+            publishTime: (price as { publishTime?: number | bigint }).publishTime 
+              ? new Date(Number((price as { publishTime?: number | bigint }).publishTime) * 1000) 
+              : new Date(),
             source: 'pyth',
             feedAddress: address,
             status,

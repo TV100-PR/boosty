@@ -301,4 +301,4 @@ export class KeyVaultImpl implements IKeyVault {
 /**
  * Export a singleton instance
  */
-export const KeyVault = new KeyVaultImpl();
+export const keyVault = new KeyVaultImpl();

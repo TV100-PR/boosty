@@ -12,7 +12,6 @@ import nacl from 'tweetnacl';
 import bs58 from 'bs58';
 import type {
   TransactionSigner as ITransactionSigner,
-  SigningOptions,
   WalletErrorCode,
   AuditAction,
 } from '../types.js';

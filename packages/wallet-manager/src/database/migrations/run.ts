@@ -70,10 +70,8 @@ async function applyMigration(
     // Run the migration SQL
     await tx.unsafe(content);
     
-    // Record the migration
-    await tx`
-      INSERT INTO _migrations (name) VALUES (${filename})
-    `;
+    // Record the migration - use unsafe for parameterized query
+    await tx.unsafe(`INSERT INTO _migrations (name) VALUES ($1)`, [filename]);
   });
   
   console.log(`  ✓ Applied ${filename}`);
@@ -139,13 +137,17 @@ export async function rollbackLastMigration(databaseUrl?: string): Promise<void>
     }
 
     const lastMigration = applied[applied.length - 1];
+    
+    if (!lastMigration) {
+      console.log('No migrations to rollback.');
+      return;
+    }
+    
     console.log(`Rolling back: ${lastMigration}`);
 
     // Note: This doesn't actually undo the migration SQL
     // In production, you would need down migrations
-    await sql`
-      DELETE FROM _migrations WHERE name = ${lastMigration}
-    `;
+    await sql.unsafe(`DELETE FROM _migrations WHERE name = $1`, [lastMigration]);
 
     console.log(`Removed ${lastMigration} from migrations table.`);
     console.log('WARNING: Database schema was not reverted. Manual cleanup may be needed.');

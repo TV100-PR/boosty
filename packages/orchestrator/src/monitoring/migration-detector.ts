@@ -213,7 +213,7 @@ export class MigrationDetector
     const migrations = this.getMigrationsForToken(tokenMint);
     if (migrations.length > 0) {
       const latestMigration = migrations[migrations.length - 1];
-      if (latestMigration.toPool.isActive) {
+      if (latestMigration?.toPool.isActive) {
         return latestMigration.toPool;
       }
     }

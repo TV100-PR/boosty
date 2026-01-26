@@ -83,7 +83,7 @@ export async function getTransactionHistory(
       const sig = batch[j];
       const parsedTx = parsedTxs[j];
 
-      if (!parsedTx) {
+      if (!sig || !parsedTx) {
         continue;
       }
 
@@ -222,8 +222,8 @@ function extractSolTransfers(
   // Check pre and post balances
   if (meta.preBalances && meta.postBalances) {
     for (let i = 0; i < accountKeys.length; i++) {
-      const preBalance = meta.preBalances[i];
-      const postBalance = meta.postBalances[i];
+      const preBalance = meta.preBalances[i] ?? 0;
+      const postBalance = meta.postBalances[i] ?? 0;
       const diff = postBalance - preBalance;
 
       // Skip if no change or if this is the fee payer (first account)
@@ -331,7 +331,7 @@ export async function getLatestSignature(
 ): Promise<string | null> {
   const publicKey = new PublicKey(address);
   const signatures = await connection.getSignaturesForAddress(publicKey, { limit: 1 });
-  return signatures.length > 0 ? signatures[0].signature : null;
+  return signatures[0]?.signature ?? null;
 }
 
 /**

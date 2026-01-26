@@ -5,6 +5,28 @@
 import { defiLlamaClient } from '../apis/defillama';
 import { GetYieldHistoryInput, YieldHistoryResult } from '../types';
 
+/**
+ * Tool definition for MCP registration
+ */
+export const getYieldHistoryDefinition = {
+  name: 'getYieldHistory',
+  description: 'Get historical APY and TVL data for a yield pool over a specified time period.',
+  inputSchema: {
+    type: 'object' as const,
+    properties: {
+      poolId: {
+        type: 'string',
+        description: 'The DeFiLlama pool identifier',
+      },
+      days: {
+        type: 'number',
+        description: 'Number of days of history (default: 30)',
+      },
+    },
+    required: ['poolId'],
+  },
+};
+
 export async function getYieldHistory(input: GetYieldHistoryInput): Promise<YieldHistoryResult[]> {
   const { poolId, days = 30 } = input;
 

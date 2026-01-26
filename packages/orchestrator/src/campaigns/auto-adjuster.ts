@@ -3,7 +3,7 @@
  * Automatically adjusts campaign parameters to meet targets
  */
 
-import type { Campaign, CampaignConfig, BotConfig } from '../types.js';
+import type { CampaignConfig, BotConfig, CampaignStatus } from '../types.js';
 import { VolumeCampaign } from './campaign.js';
 
 /**
@@ -312,7 +312,7 @@ export class AutoAdjuster {
   private getVolumeAdjustment(
     deviation: number,
     _config: CampaignConfig,
-    status: ReturnType<Campaign['getStatus']>
+    status: CampaignStatus
   ): AdjustmentRecommendation {
     const urgency = deviation > 30 ? 'critical' : deviation > 20 ? 'high' : 'medium';
 
@@ -340,7 +340,7 @@ export class AutoAdjuster {
   private getTransactionAdjustment(
     deviation: number,
     _config: CampaignConfig,
-    _status: ReturnType<Campaign['getStatus']>
+    _status: CampaignStatus
   ): AdjustmentRecommendation {
     const urgency = deviation > 30 ? 'critical' : deviation > 20 ? 'high' : 'medium';
 

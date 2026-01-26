@@ -9,8 +9,8 @@ import type {
   ConsolidationResult,
   WalletInfo,
   ToolResult,
-} from '../types.js';
-import { logger } from '../utils/logger.js';
+} from '../../types.js';
+import { logger } from '../../utils/logger.js';
 
 // Placeholder implementations - these would integrate with actual wallet manager
 

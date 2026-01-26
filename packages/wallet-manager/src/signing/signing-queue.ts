@@ -32,11 +32,9 @@ interface QueueState {
  */
 export class SigningQueue {
   private state: QueueState;
-  private onProcess?: (entry: SigningQueueEntry) => Promise<void>;
 
   constructor(options?: {
     rateLimit?: number;
-    onProcess?: (entry: SigningQueueEntry) => Promise<void>;
   }) {
     this.state = {
       entries: new Map(),
@@ -44,7 +42,6 @@ export class SigningQueue {
       rateLimit: options?.rateLimit || DEFAULT_RATE_LIMIT,
       processing: false,
     };
-    this.onProcess = options?.onProcess;
   }
 
   /**
@@ -98,7 +95,7 @@ export class SigningQueue {
     while (!this.canSign()) {
       // Calculate wait time until oldest timestamp expires
       const oldestTimestamp = this.state.timestamps[0];
-      const waitTime = oldestTimestamp + RATE_LIMIT_WINDOW_MS - Date.now() + 100;
+      const waitTime = (oldestTimestamp ?? Date.now()) + RATE_LIMIT_WINDOW_MS - Date.now() + 100;
 
       if (waitTime > 0) {
         await new Promise(resolve => setTimeout(resolve, waitTime));
@@ -141,7 +138,7 @@ export class SigningQueue {
     }
 
     const oldestTimestamp = this.state.timestamps[0];
-    return Math.max(0, oldestTimestamp + RATE_LIMIT_WINDOW_MS - Date.now());
+    return Math.max(0, (oldestTimestamp ?? Date.now()) + RATE_LIMIT_WINDOW_MS - Date.now());
   }
 
   /**

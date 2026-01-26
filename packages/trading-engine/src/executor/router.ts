@@ -32,14 +32,12 @@ interface RouteOption {
  * Smart Order Router - finds optimal execution paths
  */
 export class SmartRouter {
-  private readonly config: TradingEngineConfig;
   private readonly jupiter: JupiterClient;
   private readonly raydium: RaydiumClient;
   private readonly orca: OrcaClient;
   private readonly pumpfun: PumpFunClient;
 
   constructor(config: TradingEngineConfig) {
-    this.config = config;
     this.jupiter = new JupiterClient(config);
     this.raydium = new RaydiumClient(config);
     this.orca = new OrcaClient(config);
@@ -246,7 +244,7 @@ export class SmartRouter {
     inputMint: string,
     outputMint: string,
     amount: bigint,
-    slippageBps: number
+    _slippageBps: number
   ): Promise<RouteOption | null> {
     try {
       // PumpFun only supports SOL <-> Token trades

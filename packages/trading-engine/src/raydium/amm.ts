@@ -9,8 +9,6 @@ import {
   PublicKey,
   Transaction,
   TransactionInstruction,
-  SystemProgram,
-  SYSVAR_RENT_PUBKEY,
 } from '@solana/web3.js';
 import {
   TOKEN_PROGRAM_ID,
@@ -137,9 +135,13 @@ export class RaydiumAMM {
       lpMint,
       baseReserve: 0n, // Will be fetched from vault
       quoteReserve: 0n, // Will be fetched from vault
+      baseDecimals,
+      quoteDecimals,
       lpSupply: 0n, // Will be fetched from mint
       openTime: poolOpenTime,
       feeRate,
+      swapFeeNumerator: Number(tradeFeeNumerator),
+      swapFeeDenominator: Number(tradeFeeDenominator),
       price: 0, // Will be calculated
     };
   }

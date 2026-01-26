@@ -268,36 +268,38 @@ export function selectProfilesForSwarm(
   const profiles: BehaviorProfile[] = [];
   
   // Define profile distribution based on mode
-  const distributions: Record<string, number> = (() => {
-    switch (mode) {
-      case 'aggressive':
-        return {
-          aggressive: 0.3,
-          'market-maker': 0.25,
-          retail: 0.2,
-          default: 0.15,
-          whale: 0.1,
-        };
-      case 'stealth':
-        return {
-          stealth: 0.35,
-          conservative: 0.25,
-          retail: 0.2,
-          default: 0.15,
-          'night-owl': 0.05,
-        };
-      case 'moderate':
-      default:
-        return {
-          default: 0.25,
-          retail: 0.25,
-          'market-maker': 0.2,
-          conservative: 0.15,
-          aggressive: 0.1,
-          stealth: 0.05,
-        };
-    }
-  })();
+  let distributions: Record<string, number>;
+  switch (mode) {
+    case 'aggressive':
+      distributions = {
+        aggressive: 0.3,
+        'market-maker': 0.25,
+        retail: 0.2,
+        default: 0.15,
+        whale: 0.1,
+      };
+      break;
+    case 'stealth':
+      distributions = {
+        stealth: 0.35,
+        conservative: 0.25,
+        retail: 0.2,
+        default: 0.15,
+        'night-owl': 0.05,
+      };
+      break;
+    case 'moderate':
+    default:
+      distributions = {
+        default: 0.25,
+        retail: 0.25,
+        'market-maker': 0.2,
+        conservative: 0.15,
+        aggressive: 0.1,
+        stealth: 0.05,
+      };
+      break;
+  }
 
   // Generate profiles based on distribution
   for (let i = 0; i < count; i++) {

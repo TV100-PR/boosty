@@ -1,5 +1,5 @@
 /**
- * @defi-mcp/trading-engine
+ * @boosty/mcp-trading-engine
  * 
  * Comprehensive Solana DeFi trading engine with support for:
  * - Jupiter V6 aggregation
@@ -16,51 +16,25 @@ export * from './types.js';
 
 // Jupiter
 export { JupiterClient } from './jupiter/client.js';
-export { getJupiterQuote, getJupiterQuotes } from './jupiter/quote.js';
-export { buildSwapTransaction, executeSwapTransaction } from './jupiter/swap.js';
-export { createDCAOrder, getDCAOrders, closeDCAOrder } from './jupiter/dca.js';
-export { createLimitOrder, getLimitOrders, cancelLimitOrder } from './jupiter/limit-orders.js';
+export { JupiterQuote } from './jupiter/quote.js';
+export { JupiterSwap } from './jupiter/swap.js';
+export { JupiterDCA, type DCAAccountState } from './jupiter/dca.js';
+export { JupiterLimitOrders, type LimitOrderState } from './jupiter/limit-orders.js';
 
 // Raydium
 export { RaydiumClient } from './raydium/client.js';
-export { 
-  getAMMPoolInfo, 
-  calculateAMMSwapOutput, 
-  buildAMMSwapInstruction 
-} from './raydium/amm.js';
-export { 
-  getCLMMPoolInfo, 
-  calculateCLMMSwapOutput, 
-  getCLMMPositions 
-} from './raydium/clmm.js';
-export { 
-  addLiquidity, 
-  removeLiquidity, 
-  getLPPosition, 
-  getLPTokenBalance 
-} from './raydium/liquidity.js';
+export { RaydiumAMM } from './raydium/amm.js';
+export { RaydiumCLMM } from './raydium/clmm.js';
+export { RaydiumLiquidity, type LiquidityCalculation, type RemoveLiquidityCalculation } from './raydium/liquidity.js';
 
 // Orca
 export { OrcaClient } from './orca/client.js';
-export { 
-  getWhirlpoolInfo, 
-  calculateWhirlpoolSwapOutput, 
-  getWhirlpoolPositions,
-  openWhirlpoolPosition,
-  closeWhirlpoolPosition 
-} from './orca/whirlpool.js';
+export { OrcaWhirlpool } from './orca/whirlpool.js';
 
 // PumpFun
 export { PumpFunClient } from './pumpfun/client.js';
-export { 
-  BondingCurveCalculator, 
-  calculateBuyOutput, 
-  calculateSellOutput 
-} from './pumpfun/bonding-curve.js';
-export { 
-  PumpFunMonitor, 
-  createPumpFunMonitor 
-} from './pumpfun/monitor.js';
+export { PumpFunBondingCurve } from './pumpfun/bonding-curve.js';
+export { PumpFunMonitor } from './pumpfun/monitor.js';
 
 // Executor
 export { TradeExecutor } from './executor/trade-executor.js';

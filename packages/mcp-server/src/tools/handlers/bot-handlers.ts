@@ -2,8 +2,8 @@
  * Tool Handlers - Bot Operations
  */
 
-import type { Bot, ToolResult } from '../types.js';
-import { logger } from '../utils/logger.js';
+import type { Bot, ToolResult } from '../../types.js';
+import { logger } from '../../utils/logger.js';
 
 export async function createBot(args: {
   walletId: string;

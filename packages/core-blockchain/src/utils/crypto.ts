@@ -2,10 +2,28 @@ import * as bip39 from 'bip39';
 import { derivePath } from 'ed25519-hd-key';
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
-import { createCipheriv, createDecipheriv, randomBytes, scrypt } from 'crypto';
-import { promisify } from 'util';
+import { createCipheriv, createDecipheriv, randomBytes, scrypt as scryptCallback } from 'crypto';
 
-const scryptAsync = promisify(scrypt);
+// Promisified scrypt with proper typing
+function scryptAsync(
+  password: string,
+  salt: Buffer,
+  keylen: number,
+  options: { N: number; r: number; p: number }
+): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    scryptCallback(
+      password,
+      salt,
+      keylen,
+      { N: options.N, r: options.r, p: options.p },
+      (err, derivedKey) => {
+        if (err) reject(err);
+        else resolve(derivedKey);
+      }
+    );
+  });
+}
 
 // Encryption configuration
 const ALGORITHM = 'aes-256-gcm';

@@ -171,7 +171,6 @@ export class TaskQueue implements TaskQueueInterface {
         priority,
         delay: 0,
         attempts: task.maxRetries,
-        timeout: task.timeout,
       }
     );
 
@@ -225,6 +224,7 @@ export class TaskQueue implements TaskQueueInterface {
     if (jobs.length === 0) return null;
 
     const job = jobs[0];
+    if (!job) return null;
     return job.data as Task;
   }
 
@@ -243,7 +243,6 @@ export class TaskQueue implements TaskQueueInterface {
         priority: PRIORITY_MAP[task.priority] ?? 3,
         delay,
         attempts: task.maxRetries,
-        timeout: task.timeout,
       }
     );
 
@@ -265,7 +264,6 @@ export class TaskQueue implements TaskQueueInterface {
           pattern: cronExpression,
         },
         attempts: task.maxRetries,
-        timeout: task.timeout,
       }
     );
 

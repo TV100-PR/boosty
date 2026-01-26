@@ -29,7 +29,7 @@ export const getWalletBalancesDefinition: ToolDefinition = {
   inputSchema: {
     type: 'object',
     properties: {
-      walletIds: { type: 'array', description: 'Specific wallet IDs to query', items: { type: 'string' } },
+      walletIds: { type: 'array', description: 'Specific wallet IDs to query', items: { type: 'string', description: 'Wallet ID' } },
       tag: { type: 'string', description: 'Filter wallets by tag' },
       includeTokens: { type: 'boolean', description: 'Include token balances (default: true)' },
     },
@@ -44,7 +44,7 @@ export const distributeFundsDefinition: ToolDefinition = {
     type: 'object',
     properties: {
       sourceWalletId: { type: 'string', description: 'Source wallet ID' },
-      targetWalletIds: { type: 'array', description: 'Target wallet IDs', items: { type: 'string' } },
+      targetWalletIds: { type: 'array', description: 'Target wallet IDs', items: { type: 'string', description: 'Target wallet ID' } },
       targetTag: { type: 'string', description: 'Distribute to all wallets with this tag' },
       amountEach: { type: 'string', description: 'SOL amount to send to each wallet' },
     },
@@ -58,7 +58,7 @@ export const consolidateFundsDefinition: ToolDefinition = {
   inputSchema: {
     type: 'object',
     properties: {
-      sourceWalletIds: { type: 'array', description: 'Source wallet IDs', items: { type: 'string' } },
+      sourceWalletIds: { type: 'array', description: 'Source wallet IDs', items: { type: 'string', description: 'Source wallet ID' } },
       sourceTag: { type: 'string', description: 'Consolidate from all wallets with this tag' },
       targetWalletId: { type: 'string', description: 'Target wallet to receive funds' },
       leaveMinimum: { type: 'string', description: 'Minimum SOL to leave in each source wallet (default: 0.005)' },

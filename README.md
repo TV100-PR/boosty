@@ -1357,7 +1357,72 @@ await walletManager.collectFunds({
 
 ---
 
-## 🔒 Security
+## � x402 Payments Integration
+
+Boosty supports monetization via the [x402 Protocol](https://x402.org) - an HTTP 402 micropayment standard for pay-per-use APIs.
+
+### Overview
+
+When enabled, certain tool calls require USDC micropayments before execution. This enables:
+- **API Monetization**: Charge per tool call
+- **Pay-Per-Use Access**: No subscriptions, pay only for what you use
+- **Multi-Network Support**: Accept payments on Base, Ethereum, or Solana
+
+### Quick Setup
+
+```bash
+# Set your payment receiving address
+X402_PAY_TO_ADDRESS=0xYourBaseAddress
+
+# Optional: Choose network (default: base-mainnet)
+X402_NETWORK=base-mainnet
+
+# Optional: Custom facilitator
+X402_FACILITATOR_URL=https://x402.org/facilitator
+```
+
+### Pricing Tiers
+
+| Category | Price | Examples |
+|----------|-------|----------|
+| **Swaps** | $0.01 | execute_swap, buy_token, sell_token |
+| **Wallet Ops** | $0.001 | create_wallet_swarm, distribute_funds |
+| **Campaigns** | $0.05-$0.10 | create_volume_campaign, start_campaign |
+| **Bots** | $0.02-$0.05 | create_bot, start_bot |
+| **Analysis** | $0.005 | analyze_liquidity, get_top_holders |
+| **Queries** | FREE | get_swap_quote, list_wallets, get_payment_pricing |
+
+### Payment Tools
+
+```typescript
+// Get all pricing
+await client.callTool('get_payment_pricing', {});
+
+// Get specific tool price
+await client.callTool('get_tool_price', { tool_name: 'execute_swap' });
+
+// Get supported networks
+await client.callTool('get_payment_networks', {});
+```
+
+### Supported Networks
+
+| Network | USDC Address |
+|---------|--------------|
+| Base Mainnet | 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913 |
+| Base Sepolia | 0x036CbD53842c5426634e7929541eC2318f3dCF7e |
+| Ethereum | 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 |
+| Solana Mainnet | EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v |
+
+### Disabling Payments
+
+Simply don't set `X402_PAY_TO_ADDRESS` - all tools will be free.
+
+📖 **Full Documentation**: [docs/X402_PAYMENTS.md](docs/X402_PAYMENTS.md)
+
+---
+
+## �🔒 Security
 
 ### Threat Model
 

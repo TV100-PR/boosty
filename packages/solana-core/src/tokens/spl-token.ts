@@ -24,7 +24,6 @@ import {
   AuthorityType,
   getAccount,
   getMint,
-  getAssociatedTokenAddress,
   createAssociatedTokenAccountInstruction,
   TokenAccountNotFoundError,
   getAssociatedTokenAddressSync,

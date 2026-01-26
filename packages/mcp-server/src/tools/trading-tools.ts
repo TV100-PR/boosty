@@ -52,6 +52,7 @@ export const executeBatchSwapsDefinition: ToolDefinition = {
         description: 'Array of swap operations',
         items: {
           type: 'object',
+          description: 'Swap operation configuration',
           properties: {
             walletId: { type: 'string', description: 'Wallet ID' },
             inputToken: { type: 'string', description: 'Input token' },

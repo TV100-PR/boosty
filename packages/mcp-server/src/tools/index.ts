@@ -8,6 +8,7 @@ export { tradingToolDefinitions } from './trading-tools.js';
 export { campaignToolDefinitions } from './campaign-tools.js';
 export { analysisToolDefinitions } from './analysis-tools.js';
 export { botToolDefinitions } from './bot-tools.js';
+export { paymentToolDefinitions } from './payment-tools.js';
 
 // Individual definitions
 export * from './wallet-tools.js';
@@ -15,6 +16,7 @@ export * from './trading-tools.js';
 export * from './campaign-tools.js';
 export * from './analysis-tools.js';
 export * from './bot-tools.js';
+export * from './payment-tools.js';
 
 // Handlers
 export * from './handlers/index.js';
@@ -25,12 +27,14 @@ import { tradingToolDefinitions } from './trading-tools.js';
 import { campaignToolDefinitions } from './campaign-tools.js';
 import { analysisToolDefinitions } from './analysis-tools.js';
 import { botToolDefinitions } from './bot-tools.js';
+import { paymentToolDefinitions } from './payment-tools.js';
 
 import * as walletHandlers from './handlers/wallet-handlers.js';
 import * as tradingHandlers from './handlers/trading-handlers.js';
 import * as campaignHandlers from './handlers/campaign-handlers.js';
 import * as analysisHandlers from './handlers/analysis-handlers.js';
 import * as botHandlers from './handlers/bot-handlers.js';
+import * as paymentHandlers from './handlers/payment-handlers.js';
 
 export const allToolDefinitions = [
   ...walletToolDefinitions,
@@ -38,6 +42,7 @@ export const allToolDefinitions = [
   ...campaignToolDefinitions,
   ...analysisToolDefinitions,
   ...botToolDefinitions,
+  ...paymentToolDefinitions,
 ];
 
 export const toolHandlers: Record<string, (args: any) => Promise<any>> = {
@@ -80,4 +85,9 @@ export const toolHandlers: Record<string, (args: any) => Promise<any>> = {
   stop_bot: botHandlers.stopBot,
   get_bot_status: botHandlers.getBotStatus,
   list_active_bots: botHandlers.listActiveBots,
+
+  // Payment tools
+  get_payment_pricing: paymentHandlers.getPaymentPricing,
+  get_tool_price: paymentHandlers.getToolPriceHandler,
+  get_payment_networks: paymentHandlers.getPaymentNetworks,
 };

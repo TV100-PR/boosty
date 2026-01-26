@@ -244,9 +244,9 @@ export class Orchestrator extends EventEmitter<OrchestratorEvents> {
       // Initialize task queue
       this.taskQueue = new TaskQueue(
         {
+          ...this.config.queue,
           redisUrl: this.config.redis.url,
           queuePrefix: this.config.redis.prefix,
-          ...this.config.queue,
         },
         workerContext
       );

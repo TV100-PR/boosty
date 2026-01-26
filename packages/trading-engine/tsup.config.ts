@@ -3,6 +3,7 @@ import { defineConfig } from 'tsup';
 export default defineConfig({
   entry: {
     index: 'src/index.ts',
+    types: 'src/types.ts',
     'jupiter/index': 'src/jupiter/index.ts',
     'raydium/index': 'src/raydium/index.ts',
     'orca/index': 'src/orca/index.ts',
@@ -11,14 +12,19 @@ export default defineConfig({
     'analytics/index': 'src/analytics/index.ts',
   },
   format: ['esm'],
-  dts: true,
+  dts: {
+    compilerOptions: {
+      composite: false,
+      incremental: false,
+    }
+  },
   clean: true,
   sourcemap: true,
   splitting: false,
   treeshake: true,
   external: [
-    '@defi-mcp/shared',
-    '@defi-mcp/solana-core',
+    '@boosty/mcp-shared',
+    '@boosty/mcp-solana-core',
     '@solana/web3.js',
     '@solana/spl-token',
     '@coral-xyz/anchor',

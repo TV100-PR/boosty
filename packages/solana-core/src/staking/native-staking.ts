@@ -68,10 +68,9 @@ export async function getStakeAccountInfo(
       return null;
     }
 
-    const stakeState = StakeProgram.decodeLockup(accountInfo.data);
     const stakeMeta = await connection.getStakeActivation(stakeAccount);
 
-    // Parse stake account data
+    // Parse stake account data from raw buffer
     const data = accountInfo.data;
     
     // Simplified parsing - full implementation would decode all fields
@@ -117,7 +116,7 @@ export async function getStakeAccountsByOwner(
 
   const results: StakeAccountInfo[] = [];
 
-  for (const { pubkey, account } of stakeAccounts) {
+  for (const { pubkey } of stakeAccounts) {
     const info = await getStakeAccountInfo(connection, pubkey);
     if (info) {
       results.push(info);
@@ -151,13 +150,14 @@ export function createStakeAccountInstructions(
   );
 
   // Delegate to validator
-  instructions.push(
-    StakeProgram.delegate({
+  const delegateIx = StakeProgram.delegate({
       stakePubkey: stakeAccountKeypair.publicKey,
       authorizedPubkey: authorized.staker,
       votePubkey,
-    }).instructions[0]
-  );
+    }).instructions[0];
+  if (delegateIx) {
+    instructions.push(delegateIx);
+  }
 
   return instructions;
 }
@@ -169,10 +169,14 @@ export function createDeactivateStakeInstruction(
   stakePubkey: PublicKey,
   authorizedPubkey: PublicKey
 ): TransactionInstruction {
-  return StakeProgram.deactivate({
+  const ix = StakeProgram.deactivate({
     stakePubkey,
     authorizedPubkey,
   }).instructions[0];
+  if (!ix) {
+    throw new Error('Failed to create deactivate instruction');
+  }
+  return ix;
 }
 
 /**
@@ -184,12 +188,16 @@ export function createWithdrawStakeInstruction(
   toPubkey: PublicKey,
   lamports: number
 ): TransactionInstruction {
-  return StakeProgram.withdraw({
+  const ix = StakeProgram.withdraw({
     stakePubkey,
     authorizedPubkey,
     toPubkey,
     lamports,
   }).instructions[0];
+  if (!ix) {
+    throw new Error('Failed to create withdraw instruction');
+  }
+  return ix;
 }
 
 /**
@@ -211,7 +219,7 @@ export async function getTopValidators(
       activatedStake: v.activatedStake,
       epochCredits: v.epochCredits,
       lastVote: v.lastVote,
-      rootSlot: v.rootSlot,
+      rootSlot: (v as { rootSlot?: number }).rootSlot ?? 0,
     }));
 
   return validators;
@@ -240,7 +248,7 @@ export async function getValidatorInfo(
     activatedStake: validator.activatedStake,
     epochCredits: validator.epochCredits,
     lastVote: validator.lastVote,
-    rootSlot: validator.rootSlot,
+    rootSlot: (validator as { rootSlot?: number }).rootSlot ?? 0,
   };
 }
 

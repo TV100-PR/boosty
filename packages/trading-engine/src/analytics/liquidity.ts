@@ -57,9 +57,6 @@ export class LiquidityAnalyzer {
     const baseValue = Number(pool.baseReserve) / Math.pow(10, pool.baseDecimals);
     const quoteValue = Number(pool.quoteReserve) / Math.pow(10, pool.quoteDecimals);
     const tvlUsd = (baseValue + quoteValue) * tokenPriceUsd;
-
-    // For constant product AMM, depth at x% impact ≈ reserve * x%
-    const k = pool.baseReserve * pool.quoteReserve;
     
     return {
       tvlUsd,
@@ -117,8 +114,7 @@ export class LiquidityAnalyzer {
    * Analyze PumpFun bonding curve liquidity
    */
   analyzeBondingCurve(state: BondingCurveState, tokenPriceUsd: number): LiquidityDepth {
-    // PumpFun uses virtual reserves
-    const virtualReserves = state.virtualSolReserves + state.virtualTokenReserves;
+    // PumpFun TVL is based on real SOL reserves
     const tvlUsd = Number(state.realSolReserves) / 1e9 * tokenPriceUsd;
 
     return {

@@ -7,7 +7,6 @@
 import {
   Connection,
   VersionedTransaction,
-  TransactionMessage,
   AddressLookupTableAccount,
   PublicKey,
   SendTransactionError,
@@ -15,7 +14,6 @@ import {
 import type {
   SwapParams,
   ExecuteSwapParams,
-  QuoteResponse,
   TransactionResult,
   TradingEngineConfig,
 } from '../types.js';

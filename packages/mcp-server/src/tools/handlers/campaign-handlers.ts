@@ -6,8 +6,8 @@ import type {
   Campaign,
   CampaignMetrics,
   ToolResult,
-} from '../types.js';
-import { logger } from '../utils/logger.js';
+} from '../../types.js';
+import { logger } from '../../utils/logger.js';
 
 export async function createVolumeCampaign(args: {
   name: string;

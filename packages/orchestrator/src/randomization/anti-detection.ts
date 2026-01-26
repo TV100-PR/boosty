@@ -427,5 +427,5 @@ export function generateRealisticMemo(): string {
     Math.random().toString(36).substring(2, 8),
   ];
   
-  return memos[Math.floor(Math.random() * memos.length)];
+  return memos[Math.floor(Math.random() * memos.length)] ?? '';
 }

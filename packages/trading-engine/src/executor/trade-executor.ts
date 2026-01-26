@@ -6,7 +6,6 @@
 
 import {
   Connection,
-  PublicKey,
   Transaction,
   VersionedTransaction,
 } from '@solana/web3.js';
@@ -42,7 +41,7 @@ export class TradeExecutor implements ITradeExecutor {
   // Settings
   private slippageToleranceBps: number;
   private mevProtectionEnabled: boolean;
-  private jitoTipLamports: number;
+  private _jitoTipLamports: number;
 
   constructor(config: Partial<TradingEngineConfig> = {}) {
     this.config = { ...DEFAULT_TRADING_CONFIG, ...config };
@@ -56,13 +55,13 @@ export class TradeExecutor implements ITradeExecutor {
     // Initialize settings
     this.slippageToleranceBps = this.config.defaultSlippageBps;
     this.mevProtectionEnabled = this.config.enableMEVProtection;
-    this.jitoTipLamports = this.config.defaultJitoTipLamports;
+    this._jitoTipLamports = this.config.defaultJitoTipLamports;
   }
 
   /**
    * Execute a trade
    */
-  async executeTrade(params: TradeParams): Promise<TradeResult> {
+  async executeTrade(_params: TradeParams): Promise<TradeResult> {
     throw new Error('executeTrade requires a signer. Use executeTradeWithSigner instead.');
   }
 
@@ -73,8 +72,6 @@ export class TradeExecutor implements ITradeExecutor {
     params: TradeParams,
     signer: Uint8Array | ((tx: Transaction | VersionedTransaction) => Promise<Transaction | VersionedTransaction>)
   ): Promise<TradeResult> {
-    const startTime = Date.now();
-
     // Validate slippage
     const slippageBps = params.slippageBps ?? this.slippageToleranceBps;
     if (slippageBps > this.config.maxSlippageBps) {
@@ -285,7 +282,7 @@ export class TradeExecutor implements ITradeExecutor {
   /**
    * Execute multiple trades in batch
    */
-  async executeBatchTrades(trades: TradeParams[]): Promise<{
+  async executeBatchTrades(_trades: TradeParams[]): Promise<{
     results: TradeResult[];
     successCount: number;
     failedCount: number;
@@ -374,8 +371,15 @@ export class TradeExecutor implements ITradeExecutor {
   setMEVProtection(enabled: boolean, tipLamports?: number): void {
     this.mevProtectionEnabled = enabled;
     if (tipLamports !== undefined) {
-      this.jitoTipLamports = tipLamports;
+      this._jitoTipLamports = tipLamports;
     }
+  }
+
+  /**
+   * Get current Jito tip amount
+   */
+  getJitoTipLamports(): number {
+    return this._jitoTipLamports;
   }
 
   /**

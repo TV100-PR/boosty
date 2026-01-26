@@ -7,14 +7,14 @@
 export { createYieldsServer, YieldsServer } from './server';
 
 // Tools
-export { getTopYields } from './tools/getTopYields';
-export { getPoolDetails } from './tools/getPoolDetails';
-export { getYieldHistory } from './tools/getYieldHistory';
-export { compareYields } from './tools/compareYields';
-export { getStablecoinYields } from './tools/getStablecoinYields';
-export { getLPYields } from './tools/getLPYields';
-export { estimateReturns } from './tools/estimateReturns';
-export { getRiskAssessment } from './tools/getRiskAssessment';
+export { getTopYields, getTopYieldsDefinition } from './tools/getTopYields';
+export { getPoolDetails, getPoolDetailsDefinition } from './tools/getPoolDetails';
+export { getYieldHistory, getYieldHistoryDefinition } from './tools/getYieldHistory';
+export { compareYields, compareYieldsDefinition } from './tools/compareYields';
+export { getStablecoinYields, getStablecoinYieldsDefinition } from './tools/getStablecoinYields';
+export { getLPYields, getLPYieldsDefinition } from './tools/getLPYields';
+export { estimateReturns, estimateReturnsDefinition } from './tools/estimateReturns';
+export { getRiskAssessment, getRiskAssessmentDefinition } from './tools/getRiskAssessment';
 
 // APIs
 export { DefiLlamaClient } from './apis/defillama';

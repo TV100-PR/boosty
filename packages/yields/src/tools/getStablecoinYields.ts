@@ -9,6 +9,40 @@ import { defiLlamaClient } from '../apis/defillama';
 import { getSimpleRiskScore, meetsMinimumSafetyStandards } from '../utils/risk';
 import { GetStablecoinYieldsInput, StablecoinYieldResult, YieldPool } from '../types';
 
+/**
+ * Tool definition for MCP registration
+ */
+export const getStablecoinYieldsDefinition = {
+  name: 'getStablecoinYields',
+  description: 'Get yield opportunities specifically for stablecoin pools with lower impermanent loss risk.',
+  inputSchema: {
+    type: 'object' as const,
+    properties: {
+      stablecoin: {
+        type: 'string',
+        description: 'Filter by specific stablecoin (USDC, USDT, DAI, etc.)',
+      },
+      chain: {
+        type: 'string',
+        description: 'Filter by blockchain',
+      },
+      minTvl: {
+        type: 'number',
+        description: 'Minimum TVL in USD',
+      },
+      minApy: {
+        type: 'number',
+        description: 'Minimum APY percentage',
+      },
+      limit: {
+        type: 'number',
+        description: 'Maximum results (default: 20)',
+      },
+    },
+    required: [],
+  },
+};
+
 // Comprehensive list of stablecoins
 const STABLECOINS = new Set([
   // USD-pegged

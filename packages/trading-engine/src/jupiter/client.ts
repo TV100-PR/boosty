@@ -20,17 +20,12 @@ import type {
   TransactionResult,
   TokenInfo,
   TradingEngineConfig,
-  DEFAULT_TRADING_CONFIG,
   IJupiterClient,
 } from '../types.js';
 
 /**
- * Token list response from Jupiter
+ * Token from Jupiter API
  */
-interface JupiterTokenListResponse {
-  tokens: JupiterToken[];
-}
-
 interface JupiterToken {
   address: string;
   chainId: number;
@@ -253,7 +248,7 @@ export class JupiterClient implements IJupiterClient {
   /**
    * Create a DCA order
    */
-  async createDCAOrder(params: DCAParams): Promise<TransactionResult> {
+  async createDCAOrder(_params: DCAParams): Promise<TransactionResult> {
     // This requires a signer - throw helpful error
     throw new Error(
       'createDCAOrder requires a signer. Use createDCAOrderWithSigner instead.'
@@ -298,7 +293,7 @@ export class JupiterClient implements IJupiterClient {
   /**
    * Create a limit order
    */
-  async createLimitOrder(params: LimitOrderParams): Promise<TransactionResult> {
+  async createLimitOrder(_params: LimitOrderParams): Promise<TransactionResult> {
     // This requires a signer - throw helpful error
     throw new Error(
       'createLimitOrder requires a signer. Use createLimitOrderWithSigner instead.'
