@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  Production-ready MCP server platform for real DeFi operations on Solana and EVM chains.<br>
+  Production-ready MCP server platform for real DeFi operations on Solana and EVM chains.<br> 
   Volume generation, trading automation, wallet management, and market making — all accessible via Claude Desktop.
 </p>
 
